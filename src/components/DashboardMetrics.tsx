@@ -112,17 +112,20 @@ export function DashboardMetrics() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600"></div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Patients Section */}
-      <div>
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Patient Metrics</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="animate-slide-up">
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Patient Analytics</h2>
+          <p className="text-gray-600">Real-time patient matching performance</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <MetricCard
             title="Total Patients"
             value={data.totalPatients}
@@ -151,9 +154,12 @@ export function DashboardMetrics() {
       </div>
 
       {/* Trials Section */}
-      <div>
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Trial Metrics</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="animate-slide-up" style={{animationDelay: '0.2s'}}>
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Trial Insights</h2>
+          <p className="text-gray-600">Clinical trial distribution and matching efficiency</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <MetricCard
             title="Total Trials"
             value={data.totalTrials}
@@ -170,10 +176,13 @@ export function DashboardMetrics() {
         </div>
       </div>
 
-      {/* Summary and Processing Section */}
-      <div>
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">System Performance</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* System Performance Section */}
+      <div className="animate-slide-up" style={{animationDelay: '0.4s'}}>
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">System Performance</h2>
+          <p className="text-gray-600">AI agents and processing capabilities</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <MetricCard
             title="Enriched Summaries"
             value={data.enrichedSummaries}

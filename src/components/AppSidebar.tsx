@@ -50,33 +50,34 @@ export function AppSidebar() {
   const location = useLocation()
 
   return (
-    <Sidebar>
-      <SidebarHeader className="p-6">
+    <Sidebar className="border-r-0 shadow-xl">
+      <SidebarHeader className="p-6 bg-gradient-to-r from-blue-600 to-blue-700">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-            <Activity className="w-5 h-5 text-white" />
+          <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+            <Activity className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">ClinicalMatch</h2>
-            <p className="text-sm text-gray-500">Trial Matching Platform</p>
+            <h2 className="text-xl font-bold text-white">ClinicalMatch</h2>
+            <p className="text-blue-100 text-sm">AI Trial Matching</p>
           </div>
         </div>
       </SidebarHeader>
       
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+      <SidebarContent className="bg-white">
+        <SidebarGroup className="px-4 py-6">
+          <SidebarGroupLabel className="text-gray-500 font-medium mb-4">Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-2">
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton 
                     asChild 
                     isActive={location.pathname === item.url}
+                    className="rounded-xl h-12 px-4 hover:bg-blue-50 data-[active=true]:bg-blue-100 data-[active=true]:text-blue-700 transition-all duration-200"
                   >
                     <Link to={item.url}>
-                      <item.icon className="w-4 h-4" />
-                      <span>{item.title}</span>
+                      <item.icon className="w-5 h-5" />
+                      <span className="font-medium">{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -86,10 +87,15 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
       
-      <SidebarFooter className="p-4">
-        <div className="text-xs text-gray-500 text-center">
-          <p>Clinical Trials Platform</p>
-          <p>v1.0.0</p>
+      <SidebarFooter className="p-6 bg-gray-50 border-t">
+        <div className="text-center">
+          <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
+            <Activity className="w-6 h-6 text-white" />
+          </div>
+          <div className="text-xs text-gray-600">
+            <p className="font-medium">Clinical Trials Platform</p>
+            <p className="text-gray-400">v1.0.0</p>
+          </div>
         </div>
       </SidebarFooter>
     </Sidebar>
