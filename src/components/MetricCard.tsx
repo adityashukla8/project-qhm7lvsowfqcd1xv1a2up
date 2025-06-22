@@ -22,30 +22,30 @@ export function MetricCard({
   className = "" 
 }: MetricCardProps) {
   return (
-    <Card className={`${className} card-hover border-0 shadow-lg bg-white/80 backdrop-blur-sm rounded-2xl overflow-hidden`}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-        <CardTitle className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
+    <Card className={`${className} card-premium border-0 rounded-3xl overflow-hidden group`}>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+        <CardTitle className="text-sm font-bold text-gray-600 uppercase tracking-wider">
           {title}
         </CardTitle>
-        <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
-          <Icon className="h-5 w-5 text-white" />
+        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300">
+          <Icon className="h-6 w-6 text-white" />
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="text-3xl font-bold text-gray-900 mb-1">{value}</div>
+      <CardContent className="pt-0">
+        <div className="text-4xl font-bold text-gray-900 mb-2 tracking-tight">{value}</div>
         {subtitle && (
-          <p className="text-sm text-gray-500">{subtitle}</p>
+          <p className="text-gray-600 font-medium">{subtitle}</p>
         )}
         {trend && (
-          <div className="flex items-center mt-3 pt-3 border-t border-gray-100">
-            <div className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+          <div className="flex items-center mt-4 pt-4 border-t border-gray-100">
+            <div className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold ${
               trend.isPositive 
-                ? 'bg-green-100 text-green-800' 
-                : 'bg-red-100 text-red-800'
+                ? 'bg-emerald-100 text-emerald-700' 
+                : 'bg-red-100 text-red-700'
             }`}>
-              {trend.isPositive ? '+' : ''}{trend.value}%
+              {trend.isPositive ? '↗' : '↘'} {Math.abs(trend.value)}%
             </div>
-            <span className="text-xs text-gray-500 ml-2">from last month</span>
+            <span className="text-xs text-gray-500 ml-3 font-medium">vs last month</span>
           </div>
         )}
       </CardContent>
