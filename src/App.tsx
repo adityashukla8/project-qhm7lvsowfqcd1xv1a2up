@@ -8,6 +8,8 @@ import { AppSidebar } from "@/components/AppSidebar";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import MatchTrials from "./pages/MatchTrials";
+import Trials from "./pages/Trials";
+import TrialDetail from "./pages/TrialDetail";
 import PatientInfo from "./pages/PatientInfo";
 import ProtocolOptimization from "./pages/ProtocolOptimization";
 import NotFound from "./pages/NotFound";
@@ -28,6 +30,8 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/match-trials" element={<MatchTrials />} />
+                <Route path="/trials" element={<Trials />} />
+                <Route path="/trials/:id" element={<TrialDetail />} />
                 <Route path="/patient-info" element={<PatientInfo />} />
                 <Route path="/protocol-optimization" element={<ProtocolOptimization />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

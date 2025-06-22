@@ -1,4 +1,4 @@
-import { Calendar, Home, Users, FileText, Settings, Activity } from "lucide-react"
+import { Calendar, Home, Users, FileText, Settings, Activity, Beaker } from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
 import {
   Sidebar,
@@ -23,6 +23,11 @@ const menuItems = [
     title: "Match Trials",
     url: "/match-trials",
     icon: Activity,
+  },
+  {
+    title: "Trials",
+    url: "/trials",
+    icon: Beaker,
   },
   {
     title: "Patient Info",
