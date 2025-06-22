@@ -1,0 +1,22 @@
+{
+  "name": "ProcessingMetric",
+  "description": "System processing metrics and performance data",
+  "properties": {
+    "metric_type": {
+      "type": "string",
+      "description": "Type of metric: api_response_time, agent_count, tool_count"
+    },
+    "value": {
+      "type": "number",
+      "description": "Metric value"
+    },
+    "timestamp": {
+      "type": "string",
+      "description": "When the metric was recorded"
+    },
+    "details": {
+      "type": "string",
+      "description": "Additional metric details"
+    }
+  }
+}

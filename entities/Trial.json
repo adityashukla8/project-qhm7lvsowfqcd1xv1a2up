@@ -1,0 +1,34 @@
+{
+  "name": "Trial",
+  "description": "Clinical trial information",
+  "properties": {
+    "trial_id": {
+      "type": "string",
+      "description": "Unique trial identifier"
+    },
+    "title": {
+      "type": "string",
+      "description": "Trial title"
+    },
+    "phase": {
+      "type": "string",
+      "description": "Trial phase: Phase 1, Phase 2, Phase 3, Phase 4"
+    },
+    "condition": {
+      "type": "string",
+      "description": "Medical condition being studied"
+    },
+    "status": {
+      "type": "string",
+      "description": "Trial status: active, completed, recruiting"
+    },
+    "location": {
+      "type": "string",
+      "description": "Trial location"
+    },
+    "matched_patients_count": {
+      "type": "number",
+      "description": "Number of patients matched to this trial"
+    }
+  }
+}

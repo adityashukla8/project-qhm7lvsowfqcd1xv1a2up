@@ -1,0 +1,38 @@
+{
+  "name": "Patient",
+  "description": "Patient information for clinical trial matching",
+  "properties": {
+    "patient_id": {
+      "type": "string",
+      "description": "Unique patient identifier"
+    },
+    "name": {
+      "type": "string",
+      "description": "Patient name"
+    },
+    "age": {
+      "type": "number",
+      "description": "Patient age"
+    },
+    "gender": {
+      "type": "string",
+      "description": "Patient gender"
+    },
+    "condition": {
+      "type": "string",
+      "description": "Medical condition"
+    },
+    "status": {
+      "type": "string",
+      "description": "Processing status: processed, pending"
+    },
+    "matched": {
+      "type": "boolean",
+      "description": "Whether patient was matched to trials"
+    },
+    "matched_trials_count": {
+      "type": "number",
+      "description": "Number of trials matched to this patient"
+    }
+  }
+}
