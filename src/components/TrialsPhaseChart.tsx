@@ -26,30 +26,29 @@ export function TrialsPhaseChart({ data }: TrialsPhaseChartProps) {
   }))
 
   return (
-    <Card className="col-span-1 card-premium border-0 rounded-3xl overflow-hidden group">
-      <CardHeader className="pb-4">
+    <Card className="col-span-1 card-hover border-0 shadow-lg bg-white/80 backdrop-blur-sm rounded-2xl overflow-hidden">
+      <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-bold text-gray-600 uppercase tracking-wider">
+          <CardTitle className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
             Trials by Phase
           </CardTitle>
-          <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300">
-            <Activity className="h-6 w-6 text-white" />
+          <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
+            <Activity className="h-5 w-5 text-white" />
           </div>
         </div>
       </CardHeader>
-      <CardContent className="pt-0">
-        <div className="h-72">
+      <CardContent>
+        <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={chartData}
                 cx="50%"
                 cy="50%"
-                innerRadius={60}
-                outerRadius={100}
-                paddingAngle={3}
+                innerRadius={50}
+                outerRadius={90}
+                paddingAngle={2}
                 dataKey="value"
-                strokeWidth={0}
               >
                 {chartData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
@@ -57,21 +56,19 @@ export function TrialsPhaseChart({ data }: TrialsPhaseChartProps) {
               </Pie>
               <Tooltip 
                 formatter={(value) => [`${value} trials`, 'Count']}
-                labelStyle={{ color: '#374151', fontWeight: '700', fontSize: '14px' }}
+                labelStyle={{ color: '#374151', fontWeight: '600' }}
                 contentStyle={{ 
                   backgroundColor: 'white', 
                   border: 'none', 
-                  borderRadius: '16px', 
-                  boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-                  padding: '16px'
+                  borderRadius: '12px', 
+                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' 
                 }}
               />
               <Legend 
                 verticalAlign="bottom" 
-                height={48}
-                iconType="circle"
+                height={36}
                 formatter={(value) => (
-                  <span style={{ color: '#374151', fontSize: '14px', fontWeight: '600' }}>
+                  <span style={{ color: '#374151', fontSize: '12px', fontWeight: '500' }}>
                     {value}
                   </span>
                 )}

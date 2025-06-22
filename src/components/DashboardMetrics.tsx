@@ -111,28 +111,21 @@ export function DashboardMetrics() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="relative">
-          <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200 border-t-blue-600"></div>
-          <div className="absolute inset-0 rounded-full border-4 border-blue-100 animate-pulse"></div>
-        </div>
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600"></div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-20">
+    <div className="space-y-8">
       {/* Patients Section */}
-      <section className="animate-fade-in-up">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4 tracking-tight">
-            Patient <span className="text-gradient">Analytics</span>
-          </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Real-time insights into patient matching performance and outcomes
-          </p>
+      <div className="animate-slide-up">
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Patient Analytics</h2>
+          <p className="text-gray-600">Real-time patient matching performance</p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <MetricCard
             title="Total Patients"
             value={data.totalPatients}
@@ -158,19 +151,15 @@ export function DashboardMetrics() {
             subtitle="Success rate"
           />
         </div>
-      </section>
+      </div>
 
       {/* Trials Section */}
-      <section className="animate-fade-in-up" style={{animationDelay: '0.2s'}}>
-        <div className="text-center mb-12">
-          <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4 tracking-tight">
-            Trial <span className="text-gradient">Insights</span>
-          </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Clinical trial distribution and matching efficiency metrics
-          </p>
+      <div className="animate-slide-up" style={{animationDelay: '0.2s'}}>
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Trial Insights</h2>
+          <p className="text-gray-600">Clinical trial distribution and matching efficiency</p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <MetricCard
             title="Total Trials"
             value={data.totalTrials}
@@ -185,19 +174,15 @@ export function DashboardMetrics() {
           />
           <TrialsPhaseChart data={data.trialsPhaseData} />
         </div>
-      </section>
+      </div>
 
       {/* System Performance Section */}
-      <section className="animate-fade-in-up" style={{animationDelay: '0.4s'}}>
-        <div className="text-center mb-12">
-          <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4 tracking-tight">
-            System <span className="text-gradient">Performance</span>
-          </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            AI agents and processing capabilities overview
-          </p>
+      <div className="animate-slide-up" style={{animationDelay: '0.4s'}}>
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">System Performance</h2>
+          <p className="text-gray-600">AI agents and processing capabilities</p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <MetricCard
             title="Enriched Summaries"
             value={data.enrichedSummaries}
@@ -223,7 +208,7 @@ export function DashboardMetrics() {
             subtitle="System capabilities"
           />
         </div>
-      </section>
+      </div>
     </div>
   )
 }
