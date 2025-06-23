@@ -37,12 +37,12 @@ const menuItems = [
   {
     title: "Protocol Optimization",
     url: "/protocol-optimization",
-    icon: Zap,
+    icon: Activity,
   },
   {
     title: "About",
     url: "/about",
-    icon: Activity,
+    icon: Search,
   },
 ]
 
