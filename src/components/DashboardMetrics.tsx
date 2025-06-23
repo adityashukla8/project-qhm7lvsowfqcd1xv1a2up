@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Users, Activity, FileText, Clock, Bot, Wrench, TrendingUp, Target } from 'lucide-react'
+import { Users, Activity, FileText, Clock, Bot, Wrench, Target } from 'lucide-react'
 import { MetricCard } from './MetricCard'
 import { TrialsPhaseChart } from './TrialsPhaseChart'
 import { Patient } from '@/entities'

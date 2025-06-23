@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
-import { Search, MapPin, Users, ExternalLink, Calendar, User, Globe, Activity } from "lucide-react"
-import { Trial, Patient, TrialMatch } from '@/entities'
+import { Search, MapPin, Users, ExternalLink, Calendar, User, Activity } from "lucide-react"
+import { Trial, Patient } from '@/entities'
 import { Link } from 'react-router-dom'
 
 interface TrialData extends Trial {
