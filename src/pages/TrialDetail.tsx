@@ -56,20 +56,20 @@ const TrialDetail = () => {
 
   const getPhaseColor = (phase: string) => {
     switch (phase) {
-      case 'Phase 1': return 'bg-blue-50 text-blue-700 border-blue-200'
-      case 'Phase 2': return 'bg-emerald-50 text-emerald-700 border-emerald-200'
-      case 'Phase 3': return 'bg-amber-50 text-amber-700 border-amber-200'
-      case 'Phase 4': return 'bg-rose-50 text-rose-700 border-rose-200'
-      default: return 'bg-slate-50 text-slate-700 border-slate-200'
+      case 'Phase 1': return 'bg-gradient-to-r from-blue-500/20 to-blue-600/20 text-blue-700 border-blue-200/50'
+      case 'Phase 2': return 'bg-gradient-to-r from-emerald-500/20 to-emerald-600/20 text-emerald-700 border-emerald-200/50'
+      case 'Phase 3': return 'bg-gradient-to-r from-amber-500/20 to-amber-600/20 text-amber-700 border-amber-200/50'
+      case 'Phase 4': return 'bg-gradient-to-r from-rose-500/20 to-rose-600/20 text-rose-700 border-rose-200/50'
+      default: return 'bg-gradient-to-r from-slate-500/20 to-slate-600/20 text-slate-700 border-slate-200/50'
     }
   }
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'recruiting': return 'bg-emerald-50 text-emerald-700 border-emerald-200'
-      case 'active': return 'bg-blue-50 text-blue-700 border-blue-200'
-      case 'completed': return 'bg-slate-50 text-slate-700 border-slate-200'
-      default: return 'bg-slate-50 text-slate-700 border-slate-200'
+      case 'recruiting': return 'bg-gradient-to-r from-emerald-500/20 to-emerald-600/20 text-emerald-700 border-emerald-200/50'
+      case 'active': return 'bg-gradient-to-r from-blue-500/20 to-blue-600/20 text-blue-700 border-blue-200/50'
+      case 'completed': return 'bg-gradient-to-r from-slate-500/20 to-slate-600/20 text-slate-700 border-slate-200/50'
+      default: return 'bg-gradient-to-r from-slate-500/20 to-slate-600/20 text-slate-700 border-slate-200/50'
     }
   }
 
@@ -80,7 +80,7 @@ const TrialDetail = () => {
     const citationList = citations.split(/[;,]/).map(citation => citation.trim()).filter(citation => citation.length > 0)
     
     return citationList.map((citation, index) => (
-      <span key={index} className="inline-block bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 px-3 py-1.5 rounded-full text-xs font-medium mr-2 mb-2 border border-blue-100 hover:shadow-sm transition-all duration-200">
+      <span key={index} className="inline-block bg-gradient-to-r from-indigo-50 to-blue-50 text-indigo-700 px-3 py-1.5 rounded-full text-xs font-medium mr-2 mb-2 border border-indigo-100/50 hover:shadow-sm transition-all duration-200">
         {citation}
       </span>
     ))
@@ -89,20 +89,20 @@ const TrialDetail = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50">
-        <header className="bg-white/80 backdrop-blur-xl border-b border-white/20 px-8 py-6 shadow-sm">
-          <div className="flex items-center gap-6">
+        <header className="backdrop-blur-xl bg-white/80 border-b border-white/20 px-6 py-6 shadow-sm">
+          <div className="flex items-center gap-4">
             <SidebarTrigger />
             <div>
               <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">Trial Details</h1>
-              <p className="text-slate-600 mt-1">Loading trial information...</p>
+              <p className="text-slate-600 font-medium">Loading trial information...</p>
             </div>
           </div>
         </header>
         <main className="p-8">
           <div className="flex items-center justify-center h-64">
             <div className="relative">
-              <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600"></div>
-              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-400/20 to-indigo-400/20 animate-pulse"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent absolute top-0"></div>
             </div>
           </div>
         </main>
@@ -113,25 +113,25 @@ const TrialDetail = () => {
   if (!trial) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50">
-        <header className="bg-white/80 backdrop-blur-xl border-b border-white/20 px-8 py-6 shadow-sm">
-          <div className="flex items-center gap-6">
+        <header className="backdrop-blur-xl bg-white/80 border-b border-white/20 px-6 py-6 shadow-sm">
+          <div className="flex items-center gap-4">
             <SidebarTrigger />
             <div>
               <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">Trial Not Found</h1>
-              <p className="text-slate-600 mt-1">The requested trial could not be found</p>
+              <p className="text-slate-600 font-medium">The requested trial could not be found</p>
             </div>
           </div>
         </header>
         <main className="p-8">
-          <Card className="bg-white/60 backdrop-blur-xl border-white/20 shadow-xl">
+          <Card className="backdrop-blur-xl bg-white/70 border-white/20 shadow-xl">
             <CardContent className="text-center py-16">
-              <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
+              <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
                 <FileText className="w-10 h-10 text-slate-400" />
               </div>
               <h3 className="text-xl font-semibold mb-3 text-slate-900">Trial Not Found</h3>
               <p className="text-slate-600 mb-6 max-w-md mx-auto">The trial you're looking for doesn't exist or has been removed.</p>
               <Link to="/trials">
-                <Button variant="outline" className="bg-white/50 hover:bg-white/80 border-white/30 backdrop-blur-sm">
+                <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200">
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Back to Trials
                 </Button>
@@ -145,20 +145,20 @@ const TrialDetail = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50">
-      <header className="bg-white/80 backdrop-blur-xl border-b border-white/20 px-8 py-6 shadow-sm">
-        <div className="flex items-center gap-6">
+      <header className="backdrop-blur-xl bg-white/80 border-b border-white/20 px-6 py-6 shadow-sm">
+        <div className="flex items-center gap-4">
           <SidebarTrigger />
           <div className="flex-1">
             <div className="flex items-center gap-4 mb-3">
               <Link to="/trials">
-                <Button variant="outline" size="sm" className="bg-white/50 hover:bg-white/80 border-white/30 backdrop-blur-sm transition-all duration-200">
+                <Button variant="outline" size="sm" className="bg-white/50 border-white/30 hover:bg-white/70 backdrop-blur-sm transition-all duration-200">
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Back to Trials
                 </Button>
               </Link>
             </div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent leading-tight">{trial.title}</h1>
-            <p className="text-slate-600 mt-2 font-medium">Trial ID: {trial.trial_id}</p>
+            <p className="text-slate-600 font-medium mt-1">Trial ID: {trial.trial_id}</p>
           </div>
         </div>
       </header>
@@ -166,7 +166,7 @@ const TrialDetail = () => {
       <main className="p-8 max-w-7xl mx-auto">
         <div className="space-y-8">
           {/* Trial Overview */}
-          <Card className="bg-white/60 backdrop-blur-xl border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300">
+          <Card className="backdrop-blur-xl bg-white/70 border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300">
             <CardHeader className="pb-6">
               <CardTitle className="flex items-center gap-3 text-xl">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
@@ -175,16 +175,16 @@ const TrialDetail = () => {
                 <span className="bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">Trial Overview</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="pt-0">
+            <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-6">
                   <div>
                     <h3 className="font-semibold text-slate-900 mb-3 text-sm uppercase tracking-wide">Status & Phase</h3>
                     <div className="flex gap-3">
-                      <Badge className={`${getPhaseColor(trial.phase || '')} border font-medium px-3 py-1.5`}>
+                      <Badge className={`${getPhaseColor(trial.phase || '')} border font-medium px-4 py-2`}>
                         {trial.phase}
                       </Badge>
-                      <Badge className={`${getStatusColor(trial.status || '')} border font-medium px-3 py-1.5`}>
+                      <Badge className={`${getStatusColor(trial.status || '')} border font-medium px-4 py-2`}>
                         {trial.status}
                       </Badge>
                     </div>
@@ -192,8 +192,8 @@ const TrialDetail = () => {
                   <div>
                     <h3 className="font-semibold text-slate-900 mb-3 text-sm uppercase tracking-wide">Condition</h3>
                     <div className="flex items-center gap-3 text-slate-700">
-                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center">
-                        <Calendar className="w-4 h-4 text-blue-600" />
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-100 to-emerald-200 flex items-center justify-center">
+                        <Calendar className="w-4 h-4 text-emerald-600" />
                       </div>
                       <span className="font-medium">{trial.condition}</span>
                     </div>
@@ -202,8 +202,8 @@ const TrialDetail = () => {
                     <div>
                       <h3 className="font-semibold text-slate-900 mb-3 text-sm uppercase tracking-wide">Source</h3>
                       <div className="flex items-center gap-3 text-slate-700">
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center">
-                          <Globe className="w-4 h-4 text-emerald-600" />
+                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
+                          <Globe className="w-4 h-4 text-blue-600" />
                         </div>
                         <a 
                           href={trial.source_url} 
@@ -221,7 +221,7 @@ const TrialDetail = () => {
                   <div>
                     <h3 className="font-semibold text-slate-900 mb-3 text-sm uppercase tracking-wide">Location</h3>
                     <div className="flex items-center gap-3 text-slate-700">
-                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-rose-100 to-pink-100 flex items-center justify-center">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-rose-100 to-rose-200 flex items-center justify-center">
                         <MapPin className="w-4 h-4 text-rose-600" />
                       </div>
                       <span className="font-medium">{trial.location}</span>
@@ -230,7 +230,7 @@ const TrialDetail = () => {
                   <div>
                     <h3 className="font-semibold text-slate-900 mb-3 text-sm uppercase tracking-wide">Matched Patients</h3>
                     <div className="flex items-center gap-3 text-slate-700">
-                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-100 to-violet-100 flex items-center justify-center">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-100 to-purple-200 flex items-center justify-center">
                         <Users className="w-4 h-4 text-purple-600" />
                       </div>
                       <span className="font-medium">{trial.matched_patients_count || 0} patients matched</span>
@@ -242,7 +242,7 @@ const TrialDetail = () => {
               {trial.eligibility && (
                 <div className="mt-8 pt-8 border-t border-slate-200/50">
                   <h3 className="font-semibold text-slate-900 mb-4 text-sm uppercase tracking-wide">Eligibility Criteria</h3>
-                  <div className="bg-gradient-to-br from-slate-50/50 to-blue-50/30 p-6 rounded-2xl border border-slate-200/50">
+                  <div className="bg-gradient-to-br from-slate-50 to-blue-50/50 p-6 rounded-2xl border border-slate-200/50">
                     <p className="text-slate-700 leading-relaxed">{trial.eligibility}</p>
                   </div>
                 </div>
@@ -251,7 +251,7 @@ const TrialDetail = () => {
           </Card>
 
           {/* Generated Summary Section */}
-          <Card className="bg-white/60 backdrop-blur-xl border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300">
+          <Card className="backdrop-blur-xl bg-white/70 border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300">
             <CardHeader className="pb-6">
               <CardTitle className="flex items-center gap-3 text-xl">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
@@ -260,14 +260,14 @@ const TrialDetail = () => {
                 <span className="bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">Trial Details & Information</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="pt-0">
+            <CardContent>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Left Column */}
                 <div className="space-y-8">
                   {trial.official_title && (
                     <div className="group">
                       <h4 className="font-semibold text-slate-900 mb-3 flex items-center gap-3 text-sm uppercase tracking-wide">
-                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
                           <FileText className="w-3 h-3 text-blue-600" />
                         </div>
                         Official Title
@@ -279,7 +279,7 @@ const TrialDetail = () => {
                   {trial.known_side_effects && (
                     <div className="group">
                       <h4 className="font-semibold text-slate-900 mb-3 flex items-center gap-3 text-sm uppercase tracking-wide">
-                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-red-100 to-rose-100 flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-red-100 to-red-200 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
                           <Shield className="w-3 h-3 text-red-600" />
                         </div>
                         Known Side Effects
@@ -291,7 +291,7 @@ const TrialDetail = () => {
                   {trial.dsmc_presence && (
                     <div className="group">
                       <h4 className="font-semibold text-slate-900 mb-3 flex items-center gap-3 text-sm uppercase tracking-wide">
-                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-emerald-100 to-emerald-200 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
                           <Shield className="w-3 h-3 text-emerald-600" />
                         </div>
                         DSMC Presence
@@ -303,7 +303,7 @@ const TrialDetail = () => {
                   {trial.enrollment_info && (
                     <div className="group">
                       <h4 className="font-semibold text-slate-900 mb-3 flex items-center gap-3 text-sm uppercase tracking-wide">
-                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-purple-100 to-violet-100 flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-purple-100 to-purple-200 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
                           <Users className="w-3 h-3 text-purple-600" />
                         </div>
                         Enrollment Info
@@ -315,7 +315,7 @@ const TrialDetail = () => {
                   {trial.objective_summary && (
                     <div className="group">
                       <h4 className="font-semibold text-slate-900 mb-3 flex items-center gap-3 text-sm uppercase tracking-wide">
-                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
                           <Activity className="w-3 h-3 text-blue-600" />
                         </div>
                         Objective Summary
@@ -327,7 +327,7 @@ const TrialDetail = () => {
                   {trial.external_notes && (
                     <div className="group">
                       <h4 className="font-semibold text-slate-900 mb-3 flex items-center gap-3 text-sm uppercase tracking-wide">
-                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-slate-100 to-gray-100 flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
                           <FileText className="w-3 h-3 text-slate-600" />
                         </div>
                         External Notes
@@ -339,7 +339,7 @@ const TrialDetail = () => {
                   {trial.sponsor_info && (
                     <div className="group">
                       <h4 className="font-semibold text-slate-900 mb-3 flex items-center gap-3 text-sm uppercase tracking-wide">
-                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-indigo-100 to-indigo-200 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
                           <Building className="w-3 h-3 text-indigo-600" />
                         </div>
                         Sponsor Info
@@ -351,7 +351,7 @@ const TrialDetail = () => {
                   {trial.patient_experiences && (
                     <div className="group">
                       <h4 className="font-semibold text-slate-900 mb-3 flex items-center gap-3 text-sm uppercase tracking-wide">
-                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-emerald-100 to-emerald-200 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
                           <Users className="w-3 h-3 text-emerald-600" />
                         </div>
                         Patient Experiences
@@ -363,7 +363,7 @@ const TrialDetail = () => {
                   {trial.statistical_plan && (
                     <div className="group">
                       <h4 className="font-semibold text-slate-900 mb-3 flex items-center gap-3 text-sm uppercase tracking-wide">
-                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
                           <Activity className="w-3 h-3 text-orange-600" />
                         </div>
                         Statistical Plan
@@ -375,7 +375,7 @@ const TrialDetail = () => {
                   {trial.intervention_arms && (
                     <div className="group">
                       <h4 className="font-semibold text-slate-900 mb-3 flex items-center gap-3 text-sm uppercase tracking-wide">
-                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-purple-100 to-purple-200 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
                           <Activity className="w-3 h-3 text-purple-600" />
                         </div>
                         Intervention Arms
@@ -387,7 +387,7 @@ const TrialDetail = () => {
                   {trial.sample_size && (
                     <div className="group">
                       <h4 className="font-semibold text-slate-900 mb-3 flex items-center gap-3 text-sm uppercase tracking-wide">
-                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-100 to-cyan-100 flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
                           <Users className="w-3 h-3 text-blue-600" />
                         </div>
                         Sample Size
@@ -402,7 +402,7 @@ const TrialDetail = () => {
                   {trial.pre_req_for_participation && (
                     <div className="group">
                       <h4 className="font-semibold text-slate-900 mb-3 flex items-center gap-3 text-sm uppercase tracking-wide">
-                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-red-100 to-rose-100 flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-red-100 to-red-200 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
                           <FileText className="w-3 h-3 text-red-600" />
                         </div>
                         Prerequisites for Participation
@@ -414,7 +414,7 @@ const TrialDetail = () => {
                   {trial.sponsor_contact && (
                     <div className="group">
                       <h4 className="font-semibold text-slate-900 mb-3 flex items-center gap-3 text-sm uppercase tracking-wide">
-                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-indigo-100 to-indigo-200 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
                           <Building className="w-3 h-3 text-indigo-600" />
                         </div>
                         Sponsor Contact
@@ -426,7 +426,7 @@ const TrialDetail = () => {
                   {trial.location_and_site_details && (
                     <div className="group">
                       <h4 className="font-semibold text-slate-900 mb-3 flex items-center gap-3 text-sm uppercase tracking-wide">
-                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-emerald-100 to-emerald-200 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
                           <MapPin className="w-3 h-3 text-emerald-600" />
                         </div>
                         Location and Site Details
@@ -438,7 +438,7 @@ const TrialDetail = () => {
                   {trial.monitoring_frequency && (
                     <div className="group">
                       <h4 className="font-semibold text-slate-900 mb-3 flex items-center gap-3 text-sm uppercase tracking-wide">
-                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
                           <Clock className="w-3 h-3 text-orange-600" />
                         </div>
                         Monitoring Frequency
@@ -450,7 +450,7 @@ const TrialDetail = () => {
                   {trial.safety_documents && (
                     <div className="group">
                       <h4 className="font-semibold text-slate-900 mb-3 flex items-center gap-3 text-sm uppercase tracking-wide">
-                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-red-100 to-rose-100 flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-red-100 to-red-200 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
                           <Shield className="w-3 h-3 text-red-600" />
                         </div>
                         Safety Documents
@@ -462,7 +462,7 @@ const TrialDetail = () => {
                   {trial.sites && (
                     <div className="group">
                       <h4 className="font-semibold text-slate-900 mb-3 flex items-center gap-3 text-sm uppercase tracking-wide">
-                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-100 to-cyan-100 flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
                           <MapPin className="w-3 h-3 text-blue-600" />
                         </div>
                         Sites
@@ -474,7 +474,7 @@ const TrialDetail = () => {
                   {trial.patient_faq_summary && (
                     <div className="group">
                       <h4 className="font-semibold text-slate-900 mb-3 flex items-center gap-3 text-sm uppercase tracking-wide">
-                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-emerald-100 to-emerald-200 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
                           <BookOpen className="w-3 h-3 text-emerald-600" />
                         </div>
                         Patient FAQ Summary
@@ -486,7 +486,7 @@ const TrialDetail = () => {
                   {trial.citations && (
                     <div className="group">
                       <h4 className="font-semibold text-slate-900 mb-4 flex items-center gap-3 text-sm uppercase tracking-wide">
-                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-purple-100 to-violet-100 flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-purple-100 to-purple-200 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
                           <BookOpen className="w-3 h-3 text-purple-600" />
                         </div>
                         Citations
@@ -502,77 +502,83 @@ const TrialDetail = () => {
           </Card>
 
           {/* Matched Patients */}
-          <Card className="bg-white/60 backdrop-blur-xl border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300">
+          <Card className="backdrop-blur-xl bg-white/70 border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300">
             <CardHeader className="pb-6">
               <CardTitle className="flex items-center gap-3 text-xl">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
                   <Users className="w-5 h-5 text-white" />
                 </div>
                 <span className="bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">Matched Patients ({matchedPatients.length})</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="pt-0">
+            <CardContent>
               {matchedPatients.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {matchedPatients.slice(0, 6).map((patient) => (
-                    <div key={patient.id} className="bg-gradient-to-br from-white/50 to-slate-50/50 backdrop-blur-sm border border-white/30 rounded-2xl p-6 hover:shadow-lg transition-all duration-300 group">
-                      <h4 className="font-semibold text-slate-900 mb-2 group-hover:text-blue-700 transition-colors duration-200">{patient.patient_name}</h4>
-                      <div className="space-y-1 text-sm text-slate-600 mb-3">
-                        <p><span className="font-medium">ID:</span> {patient.patient_id}</p>
-                        <p><span className="font-medium">Age:</span> {patient.age}</p>
-                        <p><span className="font-medium">Condition:</span> {patient.condition}</p>
+                    <div key={patient.id} className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-white/80 to-slate-50/80 backdrop-blur-sm border border-white/30 p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      <div className="relative">
+                        <h4 className="font-semibold text-slate-900 mb-2">{patient.patient_name}</h4>
+                        <div className="space-y-1 text-sm text-slate-600">
+                          <p><span className="font-medium">ID:</span> {patient.patient_id}</p>
+                          <p><span className="font-medium">Age:</span> {patient.age}</p>
+                          <p><span className="font-medium">Condition:</span> {patient.condition}</p>
+                        </div>
+                        <Badge className="mt-3 bg-gradient-to-r from-emerald-500/20 to-emerald-600/20 text-emerald-700 border-emerald-200/50 font-medium">
+                          {patient.matched_trials_count} matches
+                        </Badge>
                       </div>
-                      <Badge className="bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 border-emerald-200 font-medium">
-                        {patient.matched_trials_count} matches
-                      </Badge>
                     </div>
                   ))}
                 </div>
               ) : (
                 <div className="text-center py-16">
-                  <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
+                  <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
                     <Users className="w-10 h-10 text-slate-400" />
                   </div>
-                  <p className="text-slate-600 text-lg">No patients matched to this trial yet</p>
+                  <p className="text-slate-600 font-medium">No patients matched to this trial yet</p>
                 </div>
               )}
             </CardContent>
           </Card>
 
           {/* Generated Summaries */}
-          <Card className="bg-white/60 backdrop-blur-xl border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300">
+          <Card className="backdrop-blur-xl bg-white/70 border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300">
             <CardHeader className="pb-6">
               <CardTitle className="flex items-center gap-3 text-xl">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center">
                   <FileText className="w-5 h-5 text-white" />
                 </div>
                 <span className="bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">Generated Summaries ({summaries.length})</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="pt-0">
+            <CardContent>
               {summaries.length > 0 ? (
                 <div className="space-y-6">
                   {summaries.map((summary) => (
-                    <div key={summary.id} className="bg-gradient-to-br from-white/50 to-slate-50/50 backdrop-blur-sm border border-white/30 rounded-2xl p-6 hover:shadow-lg transition-all duration-300">
-                      <div className="flex justify-between items-start mb-4">
-                        <Badge className={summary.type === 'match_summary' ? 'bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border-blue-200' : 'bg-gradient-to-r from-purple-50 to-violet-50 text-purple-700 border-purple-200'}>
-                          {summary.type?.replace('_', ' ')}
-                        </Badge>
-                        <span className="text-sm font-medium text-slate-600 bg-slate-100/50 px-3 py-1 rounded-full">
-                          Confidence: {((summary.confidence_score || 0) * 100).toFixed(0)}%
-                        </span>
+                    <div key={summary.id} className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-white/80 to-slate-50/80 backdrop-blur-sm border border-white/30 p-6 hover:shadow-lg transition-all duration-300">
+                      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      <div className="relative">
+                        <div className="flex justify-between items-start mb-4">
+                          <Badge className={`${summary.type === 'match_summary' ? 'bg-gradient-to-r from-blue-500/20 to-blue-600/20 text-blue-700 border-blue-200/50' : 'bg-gradient-to-r from-purple-500/20 to-purple-600/20 text-purple-700 border-purple-200/50'} font-medium px-4 py-2`}>
+                            {summary.type?.replace('_', ' ')}
+                          </Badge>
+                          <span className="text-sm text-slate-600 font-medium bg-slate-100/50 px-3 py-1 rounded-full">
+                            Confidence: {((summary.confidence_score || 0) * 100).toFixed(0)}%
+                          </span>
+                        </div>
+                        <p className="text-slate-700 leading-relaxed mb-3">{summary.content}</p>
+                        <p className="text-xs text-slate-500 font-medium">Patient ID: {summary.patient_id}</p>
                       </div>
-                      <p className="text-slate-700 leading-relaxed mb-3">{summary.content}</p>
-                      <p className="text-xs text-slate-500 font-medium">Patient ID: {summary.patient_id}</p>
                     </div>
                   ))}
                 </div>
               ) : (
                 <div className="text-center py-16">
-                  <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
+                  <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
                     <FileText className="w-10 h-10 text-slate-400" />
                   </div>
-                  <p className="text-slate-600 text-lg">No summaries generated for this trial yet</p>
+                  <p className="text-slate-600 font-medium">No summaries generated for this trial yet</p>
                 </div>
               )}
             </CardContent>
