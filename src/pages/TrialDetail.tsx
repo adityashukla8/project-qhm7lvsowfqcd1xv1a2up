@@ -4,7 +4,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, MapPin, Users, Calendar, FileText, Activity } from "lucide-react"
+import { ArrowLeft, MapPin, Users, Calendar, FileText, Activity, Globe, Shield, Building, Clock, BookOpen } from "lucide-react"
 import { Trial, Patient, Summary } from '@/entities'
 
 interface TrialData extends Trial {
@@ -71,6 +71,19 @@ const TrialDetail = () => {
       case 'completed': return 'bg-gray-100 text-gray-800'
       default: return 'bg-gray-100 text-gray-800'
     }
+  }
+
+  const formatCitations = (citations: string) => {
+    if (!citations) return null
+    
+    // Split citations by common delimiters and clean them up
+    const citationList = citations.split(/[;,]/).map(citation => citation.trim()).filter(citation => citation.length > 0)
+    
+    return citationList.map((citation, index) => (
+      <span key={index} className="inline-block bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs mr-2 mb-1">
+        {citation}
+      </span>
+    ))
   }
 
   if (loading) {
@@ -176,6 +189,22 @@ const TrialDetail = () => {
                       <span>{trial.condition}</span>
                     </div>
                   </div>
+                  {trial.source_url && (
+                    <div>
+                      <h3 className="font-medium text-gray-900 mb-2">Source</h3>
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <Globe className="w-4 h-4" />
+                        <a 
+                          href={trial.source_url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800 underline"
+                        >
+                          View Original Source
+                        </a>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-4">
                   <div>
@@ -194,6 +223,226 @@ const TrialDetail = () => {
                   </div>
                 </div>
               </div>
+              
+              {trial.eligibility && (
+                <div className="mt-6 pt-6 border-t border-gray-100">
+                  <h3 className="font-medium text-gray-900 mb-3">Eligibility Criteria</h3>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <p className="text-gray-700">{trial.eligibility}</p>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Generated Summary Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="w-5 h-5 text-blue-600" />
+                Trial Details & Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Left Column */}
+                <div className="space-y-6">
+                  {trial.official_title && (
+                    <div>
+                      <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                        <FileText className="w-4 h-4 text-blue-600" />
+                        Official Title
+                      </h4>
+                      <p className="text-gray-700">{trial.official_title}</p>
+                    </div>
+                  )}
+
+                  {trial.known_side_effects && (
+                    <div>
+                      <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                        <Shield className="w-4 h-4 text-red-600" />
+                        Known Side Effects
+                      </h4>
+                      <p className="text-gray-700">{trial.known_side_effects}</p>
+                    </div>
+                  )}
+
+                  {trial.dsmc_presence && (
+                    <div>
+                      <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                        <Shield className="w-4 h-4 text-green-600" />
+                        DSMC Presence
+                      </h4>
+                      <p className="text-gray-700">{trial.dsmc_presence}</p>
+                    </div>
+                  )}
+
+                  {trial.enrollment_info && (
+                    <div>
+                      <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                        <Users className="w-4 h-4 text-purple-600" />
+                        Enrollment Info
+                      </h4>
+                      <p className="text-gray-700">{trial.enrollment_info}</p>
+                    </div>
+                  )}
+
+                  {trial.objective_summary && (
+                    <div>
+                      <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                        <Activity className="w-4 h-4 text-blue-600" />
+                        Objective Summary
+                      </h4>
+                      <p className="text-gray-700">{trial.objective_summary}</p>
+                    </div>
+                  )}
+
+                  {trial.external_notes && (
+                    <div>
+                      <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                        <FileText className="w-4 h-4 text-gray-600" />
+                        External Notes
+                      </h4>
+                      <p className="text-gray-700">{trial.external_notes}</p>
+                    </div>
+                  )}
+
+                  {trial.sponsor_info && (
+                    <div>
+                      <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                        <Building className="w-4 h-4 text-indigo-600" />
+                        Sponsor Info
+                      </h4>
+                      <p className="text-gray-700">{trial.sponsor_info}</p>
+                    </div>
+                  )}
+
+                  {trial.patient_experiences && (
+                    <div>
+                      <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                        <Users className="w-4 h-4 text-green-600" />
+                        Patient Experiences
+                      </h4>
+                      <p className="text-gray-700">{trial.patient_experiences}</p>
+                    </div>
+                  )}
+
+                  {trial.statistical_plan && (
+                    <div>
+                      <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                        <Activity className="w-4 h-4 text-orange-600" />
+                        Statistical Plan
+                      </h4>
+                      <p className="text-gray-700">{trial.statistical_plan}</p>
+                    </div>
+                  )}
+
+                  {trial.intervention_arms && (
+                    <div>
+                      <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                        <Activity className="w-4 h-4 text-purple-600" />
+                        Intervention Arms
+                      </h4>
+                      <p className="text-gray-700">{trial.intervention_arms}</p>
+                    </div>
+                  )}
+
+                  {trial.sample_size && (
+                    <div>
+                      <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                        <Users className="w-4 h-4 text-blue-600" />
+                        Sample Size
+                      </h4>
+                      <p className="text-gray-700">{trial.sample_size}</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Right Column */}
+                <div className="space-y-6">
+                  {trial.pre_req_for_participation && (
+                    <div>
+                      <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                        <FileText className="w-4 h-4 text-red-600" />
+                        Prerequisites for Participation
+                      </h4>
+                      <p className="text-gray-700">{trial.pre_req_for_participation}</p>
+                    </div>
+                  )}
+
+                  {trial.sponsor_contact && (
+                    <div>
+                      <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                        <Building className="w-4 h-4 text-indigo-600" />
+                        Sponsor Contact
+                      </h4>
+                      <p className="text-gray-700">{trial.sponsor_contact}</p>
+                    </div>
+                  )}
+
+                  {trial.location_and_site_details && (
+                    <div>
+                      <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                        <MapPin className="w-4 h-4 text-green-600" />
+                        Location and Site Details
+                      </h4>
+                      <p className="text-gray-700">{trial.location_and_site_details}</p>
+                    </div>
+                  )}
+
+                  {trial.monitoring_frequency && (
+                    <div>
+                      <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-orange-600" />
+                        Monitoring Frequency
+                      </h4>
+                      <p className="text-gray-700">{trial.monitoring_frequency}</p>
+                    </div>
+                  )}
+
+                  {trial.safety_documents && (
+                    <div>
+                      <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                        <Shield className="w-4 h-4 text-red-600" />
+                        Safety Documents
+                      </h4>
+                      <p className="text-gray-700">{trial.safety_documents}</p>
+                    </div>
+                  )}
+
+                  {trial.sites && (
+                    <div>
+                      <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                        <MapPin className="w-4 h-4 text-blue-600" />
+                        Sites
+                      </h4>
+                      <p className="text-gray-700">{trial.sites}</p>
+                    </div>
+                  )}
+
+                  {trial.patient_faq_summary && (
+                    <div>
+                      <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                        <BookOpen className="w-4 h-4 text-green-600" />
+                        Patient FAQ Summary
+                      </h4>
+                      <p className="text-gray-700">{trial.patient_faq_summary}</p>
+                    </div>
+                  )}
+
+                  {trial.citations && (
+                    <div>
+                      <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                        <BookOpen className="w-4 h-4 text-purple-600" />
+                        Citations
+                      </h4>
+                      <div className="flex flex-wrap">
+                        {formatCitations(trial.citations)}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </CardContent>
           </Card>
 
@@ -210,7 +459,7 @@ const TrialDetail = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {matchedPatients.slice(0, 6).map((patient) => (
                     <div key={patient.id} className="border rounded-lg p-4 bg-gray-50">
-                      <h4 className="font-medium text-gray-900">{patient.name}</h4>
+                      <h4 className="font-medium text-gray-900">{patient.patient_name}</h4>
                       <p className="text-sm text-gray-600">ID: {patient.patient_id}</p>
                       <p className="text-sm text-gray-600">Age: {patient.age}</p>
                       <p className="text-sm text-gray-600">Condition: {patient.condition}</p>
@@ -229,7 +478,7 @@ const TrialDetail = () => {
             </CardContent>
           </Card>
 
-          {/* Summaries */}
+          {/* Generated Summaries */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
