@@ -57,8 +57,8 @@ export function AppSidebar() {
             <Activity className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-white">ClinicalMatch</h2>
-            <p className="text-blue-100 text-sm">AI Trial Matching</p>
+            <h2 className="text-xl font-bold text-white">CriteriAI</h2>
+            <p className="text-blue-100 text-sm">AI-Driven Clinical Trial Optimization</p>
           </div>
         </div>
       </SidebarHeader>
@@ -93,7 +93,7 @@ export function AppSidebar() {
             <Activity className="w-6 h-6 text-white" />
           </div>
           <div className="text-xs text-gray-600">
-            <p className="font-medium">Clinical Trials Platform</p>
+            <p className="font-medium">CriteriAI Platform</p>
             <p className="text-gray-400">v1.0.0</p>
           </div>
         </div>

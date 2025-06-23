@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Users, Activity, FileText, Clock, Bot, Wrench } from 'lucide-react'
+import { Users, Activity, FileText, Clock, Bot, Wrench, TrendingUp, Target } from 'lucide-react'
 import { MetricCard } from './MetricCard'
 import { TrialsPhaseChart } from './TrialsPhaseChart'
 import { Patient } from '@/entities'
@@ -118,14 +118,52 @@ export function DashboardMetrics() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
+      {/* Top Metrics in Blue Boxes */}
+      <div className="animate-slide-up">
+        <div className="mb-4 sm:mb-6">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Key Performance Indicators</h2>
+          <p className="text-gray-600 text-sm sm:text-base">Real-time system performance overview</p>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+          <MetricCard
+            title="Total Patients"
+            value={data.totalPatients}
+            icon={Users}
+            subtitle="Processed"
+            className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0"
+          />
+          <MetricCard
+            title="Match Rate"
+            value={`${data.matchRate.toFixed(1)}%`}
+            icon={Target}
+            subtitle="Success rate"
+            className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0"
+          />
+          <MetricCard
+            title="Active Trials"
+            value={data.totalTrials}
+            icon={FileText}
+            subtitle="Available"
+            className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0"
+          />
+          <MetricCard
+            title="Avg Response"
+            value={`${data.avgResponseTime.toFixed(0)}ms`}
+            icon={Clock}
+            subtitle="API performance"
+            className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0"
+          />
+        </div>
+      </div>
+
       {/* Patients Section */}
       <div className="animate-slide-up">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Patient Analytics</h2>
-          <p className="text-gray-600">Real-time patient matching performance</p>
+        <div className="mb-4 sm:mb-6">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Patient Analytics</h2>
+          <p className="text-gray-600 text-sm sm:text-base">Detailed patient matching performance</p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           <MetricCard
             title="Total Patients"
             value={data.totalPatients}
@@ -155,11 +193,11 @@ export function DashboardMetrics() {
 
       {/* Trials Section */}
       <div className="animate-slide-up" style={{animationDelay: '0.2s'}}>
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Trial Insights</h2>
-          <p className="text-gray-600">Clinical trial distribution and matching efficiency</p>
+        <div className="mb-4 sm:mb-6">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Trial Insights</h2>
+          <p className="text-gray-600 text-sm sm:text-base">Clinical trial distribution and matching efficiency</p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           <MetricCard
             title="Total Trials"
             value={data.totalTrials}
@@ -178,11 +216,11 @@ export function DashboardMetrics() {
 
       {/* System Performance Section */}
       <div className="animate-slide-up" style={{animationDelay: '0.4s'}}>
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">System Performance</h2>
-          <p className="text-gray-600">AI agents and processing capabilities</p>
+        <div className="mb-4 sm:mb-6">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">System Performance</h2>
+          <p className="text-gray-600 text-sm sm:text-base">AI agents and processing capabilities</p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           <MetricCard
             title="Enriched Summaries"
             value={data.enrichedSummaries}

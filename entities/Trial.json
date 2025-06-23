@@ -10,6 +10,10 @@
       "type": "string",
       "description": "Trial title"
     },
+    "official_title": {
+      "type": "string",
+      "description": "Official trial title"
+    },
     "phase": {
       "type": "string",
       "description": "Trial phase: Phase 1, Phase 2, Phase 3, Phase 4"
@@ -25,6 +29,86 @@
     "location": {
       "type": "string",
       "description": "Trial location"
+    },
+    "source_url": {
+      "type": "string",
+      "description": "Source URL of the trial"
+    },
+    "eligibility": {
+      "type": "string",
+      "description": "Eligibility criteria"
+    },
+    "known_side_effects": {
+      "type": "string",
+      "description": "Known side effects"
+    },
+    "dsmc_presence": {
+      "type": "string",
+      "description": "DSMC presence information"
+    },
+    "enrollment_info": {
+      "type": "string",
+      "description": "Enrollment information"
+    },
+    "objective_summary": {
+      "type": "string",
+      "description": "Objective summary"
+    },
+    "external_notes": {
+      "type": "string",
+      "description": "External notes"
+    },
+    "sponsor_info": {
+      "type": "string",
+      "description": "Sponsor information"
+    },
+    "patient_experiences": {
+      "type": "string",
+      "description": "Patient experiences"
+    },
+    "statistical_plan": {
+      "type": "string",
+      "description": "Statistical plan"
+    },
+    "intervention_arms": {
+      "type": "string",
+      "description": "Intervention arms"
+    },
+    "sample_size": {
+      "type": "string",
+      "description": "Sample size"
+    },
+    "pre_req_for_participation": {
+      "type": "string",
+      "description": "Prerequisites for participation"
+    },
+    "sponsor_contact": {
+      "type": "string",
+      "description": "Sponsor contact information"
+    },
+    "location_and_site_details": {
+      "type": "string",
+      "description": "Location and site details"
+    },
+    "monitoring_frequency": {
+      "type": "string",
+      "description": "Monitoring frequency"
+    },
+    "safety_documents": {
+      "type": "string",
+      "description": "Safety documents"
+    },
+    "sites": {
+      "type": "string",
+      "description": "Trial sites"
+    },
+    "patient_faq_summary": {
+      "type": "string",
+      "description": "Patient FAQ summary"
+    },
+    "citations": {
+      "type": "string",
+      "description": "Citations"
     },
     "matched_patients_count": {
       "type": "number",

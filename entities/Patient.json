@@ -6,21 +6,68 @@
       "type": "string",
       "description": "Unique patient identifier"
     },
-    "name": {
+    "patient_name": {
       "type": "string",
       "description": "Patient name"
+    },
+    "condition": {
+      "type": "string",
+      "description": "Medical condition"
+    },
+    "chemotherapy": {
+      "type": "array",
+      "description": "Chemotherapy treatments",
+      "items": {
+        "type": "string"
+      }
+    },
+    "radiotherapy": {
+      "type": "array",
+      "description": "Radiotherapy treatments",
+      "items": {
+        "type": "string"
+      }
     },
     "age": {
       "type": "number",
       "description": "Patient age"
     },
     "gender": {
-      "type": "string",
-      "description": "Patient gender"
+      "type": "array",
+      "description": "Patient gender",
+      "items": {
+        "type": "string"
+      }
     },
-    "condition": {
+    "country": {
       "type": "string",
-      "description": "Medical condition"
+      "description": "Patient country"
+    },
+    "metastasis": {
+      "type": "array",
+      "description": "Metastasis information",
+      "items": {
+        "type": "string"
+      }
+    },
+    "histology": {
+      "type": "string",
+      "description": "Histology information"
+    },
+    "biomarker": {
+      "type": "string",
+      "description": "Biomarker information"
+    },
+    "ecog_score": {
+      "type": "number",
+      "description": "ECOG performance score"
+    },
+    "condition_recurrence": {
+      "type": "array",
+      "description": "Condition recurrence information",
+      "items": {
+        "type": "string"
+      }
     },
     "status": {
       "type": "string",
