@@ -90,36 +90,26 @@ const MatchTrials = () => {
 
     try {
       console.log('Calling match trials API for patient:', patientData.patient_id)
-      // const matchResponse = await matchTrials({ patient_id: patientData.patient_id })
-      // console.log('Match trials response:', matchResponse)
-
-      const trialInfoResponse = await trialInfo({ patient_id: patientData.patient_id })
-      console.log('Trial info response:', trialInfoResponse)
+      const matchResponse = await matchTrials({ patient_id: patientData.patient_id })
+      console.log('Match trials response:', matchResponse)
       
-      if (trialInfoResponse.success && trialInfoResponse.trials) {
-        setMatchingResults(trialInfoResponse.trials)
+      if (matchResponse.success) {
+        console.log('Match trials completed, now fetching trial info...')
+        
+        // Call trial_info API after matchtrials completes
+        const trialInfoResponse = await trialInfo({ patient_id: patientData.patient_id })
+        console.log('Trial info response:', trialInfoResponse)
+        
+        if (trialInfoResponse.success && trialInfoResponse.trials) {
+          setMatchingResults(trialInfoResponse.trials)
+        } else {
+          console.error('Trial info API error:', trialInfoResponse)
+          setMatchingResults([])
+        }
       } else {
-        console.error('Trial info API error:', trialInfoResponse)
+        console.error('Match trials API error:', matchResponse)
         setMatchingResults([])
       }
-      
-      // if (matchResponse.success) {
-      //   console.log('Match trials completed, now fetching trial info...')
-        
-      //   // Call trial_info API after matchtrials completes
-      //   const trialInfoResponse = await trialInfo({ patient_id: patientData.patient_id })
-      //   console.log('Trial info response:', trialInfoResponse)
-        
-      //   if (trialInfoResponse.success && trialInfoResponse.trials) {
-      //     setMatchingResults(trialInfoResponse.trials)
-      //   } else {
-      //     console.error('Trial info API error:', trialInfoResponse)
-      //     setMatchingResults([])
-      //   }
-      // } else {
-      //   console.error('Match trials API error:', matchResponse)
-      //   setMatchingResults([])
-      // }
       
       setHasSearched(true)
     } catch (error) {
