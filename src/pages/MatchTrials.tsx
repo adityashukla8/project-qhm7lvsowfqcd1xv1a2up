@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
-import { Search, MapPin, Users, ExternalLink, Calendar, User, Activity } from "lucide-react"
+import { Search, MapPin, Users, ExternalLink, Calendar, User, Activity, CheckCircle, XCircle } from "lucide-react"
 import { Trial } from '@/entities'
 import { Link } from 'react-router-dom'
-import { fetchPatients } from '@/functions'
+import { fetchPatients, matchTrials } from '@/functions'
 
 interface TrialData extends Trial {
   id: string
@@ -34,10 +34,18 @@ interface PatientData {
   matched_trials_count: number
 }
 
+interface MatchResult {
+  trial_id: string
+  match_score: number
+  match_reason: string
+  eligibility_status: string
+  trial_details?: TrialData
+}
+
 const MatchTrials = () => {
   const [patientId, setPatientId] = useState('')
   const [patientData, setPatientData] = useState<PatientData | null>(null)
-  const [matchingResults, setMatchingResults] = useState<TrialData[]>([])
+  const [matchingResults, setMatchingResults] = useState<MatchResult[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const [isFetchingPatient, setIsFetchingPatient] = useState(false)
   const [hasSearched, setHasSearched] = useState(false)
@@ -80,17 +88,34 @@ const MatchTrials = () => {
     setHasSearched(false)
 
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      console.log('Calling match trials API for patient:', patientData.patient_id)
+      const response = await matchTrials({ patient_id: patientData.patient_id })
+      console.log('Match trials response:', response)
       
-      // Fetch all trials and filter by condition
-      const allTrials = await Trial.list()
-      const matchedTrials = allTrials.filter(trial => 
-        trial.condition?.toLowerCase().includes(patientData.condition?.toLowerCase() || '') ||
-        trial.title?.toLowerCase().includes(patientData.condition?.toLowerCase() || '')
-      )
+      if (response.success && response.matches) {
+        // Fetch trial details for each matched trial
+        const matchesWithDetails = await Promise.all(
+          response.matches.map(async (match: MatchResult) => {
+            try {
+              const trials = await Trial.filter({ trial_id: match.trial_id })
+              const trialDetails = trials.length > 0 ? trials[0] : null
+              return {
+                ...match,
+                trial_details: trialDetails
+              }
+            } catch (error) {
+              console.error(`Error fetching trial details for ${match.trial_id}:`, error)
+              return match
+            }
+          })
+        )
+        
+        setMatchingResults(matchesWithDetails)
+      } else {
+        console.error('Match trials API error:', response)
+        setMatchingResults([])
+      }
       
-      setMatchingResults(matchedTrials)
       setHasSearched(true)
     } catch (error) {
       console.error('Error finding matching trials:', error)
@@ -120,139 +145,25 @@ const MatchTrials = () => {
     }
   }
 
+  const getMatchScoreColor = (score: number) => {
+    if (score >= 80) return 'bg-green-100 text-green-800 border-green-200'
+    if (score >= 60) return 'bg-yellow-100 text-yellow-800 border-yellow-200'
+    return 'bg-red-100 text-red-800 border-red-200'
+  }
+
+  const getEligibilityIcon = (status: string) => {
+    return status.toLowerCase() === 'eligible' ? 
+      <CheckCircle className="w-4 h-4 text-green-600" /> : 
+      <XCircle className="w-4 h-4 text-red-600" />
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50">
-      <div className="gradient-bg-medical">
-        <header className="px-4 sm:px-6 py-6 sm:py-8">
-          <div className="flex items-center gap-4">
-            <SidebarTrigger className="text-white hover:bg-white/20" />
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-white">Match Trials</h1>
-              <p className="text-blue-100 text-base sm:text-lg">Find suitable clinical trials for patients</p>
-            </div>
-          </div>
-        </header>
-      </div>
+      {/* ... keep existing code (header) ... */}
       
       <main className="p-4 sm:p-8 -mt-4 relative z-10 max-w-6xl mx-auto">
         <div className="space-y-6 sm:space-y-8 animate-slide-up">
-          {/* Patient Search */}
-          <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm rounded-2xl overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100">
-              <CardTitle className="flex items-center gap-3 text-lg sm:text-xl">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl flex items-center justify-center">
-                  <Search className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                </div>
-                Patient Search
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 sm:p-8 space-y-4 sm:space-y-6">
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex-1 space-y-2">
-                  <Label htmlFor="patientId" className="text-sm font-semibold text-gray-700">Patient ID</Label>
-                  <Input 
-                    id="patientId" 
-                    placeholder="Enter patient ID to search (e.g., P001, P002, etc.)"
-                    className="h-10 sm:h-12 border-0 bg-gray-50 rounded-xl"
-                    value={patientId}
-                    onChange={(e) => setPatientId(e.target.value)}
-                  />
-                </div>
-                <div className="flex items-end">
-                  <Button 
-                    className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 rounded-xl px-6 h-10 sm:h-12 shadow-lg w-full sm:w-auto"
-                    onClick={handleFetchPatient}
-                    disabled={isFetchingPatient}
-                  >
-                    <Search className="w-4 h-4 mr-2" />
-                    {isFetchingPatient ? 'Searching...' : 'Fetch Patient'}
-                  </Button>
-                </div>
-              </div>
-              {!patientData && !isFetchingPatient && (
-                <div className="text-sm text-gray-600 bg-blue-50 px-4 py-3 rounded-lg">
-                  <strong>Tip:</strong> Try patient IDs like P001, P002, P003, etc. Make sure the patient exists in the external API.
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Patient Details */}
-          {patientData && (
-            <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm rounded-2xl overflow-hidden">
-              <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 border-b border-green-100">
-                <CardTitle className="flex items-center gap-3 text-lg sm:text-xl">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-green-600 to-green-700 rounded-xl flex items-center justify-center">
-                    <User className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                  </div>
-                  Patient Details
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-4 sm:p-8">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                  <div className="space-y-2">
-                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Patient Name</Label>
-                    <p className="font-medium text-gray-900">{patientData.patient_name}</p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Age</Label>
-                    <p className="font-medium text-gray-900">{patientData.age}</p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Gender</Label>
-                    <p className="font-medium text-gray-900">{Array.isArray(patientData.gender) ? patientData.gender.join(', ') : patientData.gender}</p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Condition</Label>
-                    <p className="font-medium text-gray-900">{patientData.condition}</p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Country</Label>
-                    <p className="font-medium text-gray-900">{patientData.country}</p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-gray-500 uppercase tracking-wide">ECOG Score</Label>
-                    <p className="font-medium text-gray-900">{patientData.ecog_score}</p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Histology</Label>
-                    <p className="font-medium text-gray-900">{patientData.histology}</p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Biomarker</Label>
-                    <p className="font-medium text-gray-900">{patientData.biomarker}</p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Chemotherapy</Label>
-                    <p className="font-medium text-gray-900">{Array.isArray(patientData.chemotherapy) ? patientData.chemotherapy.join(', ') : patientData.chemotherapy}</p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Radiotherapy</Label>
-                    <p className="font-medium text-gray-900">{Array.isArray(patientData.radiotherapy) ? patientData.radiotherapy.join(', ') : patientData.radiotherapy}</p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Metastasis</Label>
-                    <p className="font-medium text-gray-900">{Array.isArray(patientData.metastasis) ? patientData.metastasis.join(', ') : patientData.metastasis}</p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Condition Recurrence</Label>
-                    <p className="font-medium text-gray-900">{Array.isArray(patientData.condition_recurrence) ? patientData.condition_recurrence.join(', ') : patientData.condition_recurrence}</p>
-                  </div>
-                </div>
-                
-                <div className="mt-6 pt-6 border-t border-gray-100">
-                  <Button 
-                    className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white border-0 rounded-xl px-6 h-10 sm:h-12 shadow-lg"
-                    onClick={handleFindTrials}
-                    disabled={isSearching}
-                  >
-                    <Activity className="w-4 h-4 mr-2" />
-                    {isSearching ? 'Finding Trials...' : 'Find Matching Trials'}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+          {/* ... keep existing code (Patient Search and Patient Details sections) ... */}
 
           {/* Matching Results */}
           <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm rounded-2xl overflow-hidden">
@@ -263,7 +174,7 @@ const MatchTrials = () => {
               {isSearching ? (
                 <div className="text-center py-12">
                   <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600 mx-auto mb-4"></div>
-                  <p className="text-gray-600 text-lg">Searching for matching clinical trials...</p>
+                  <p className="text-gray-600 text-lg">Finding matching clinical trials...</p>
                 </div>
               ) : hasSearched ? (
                 matchingResults.length > 0 ? (
@@ -271,59 +182,81 @@ const MatchTrials = () => {
                     <div className="text-sm text-gray-600 bg-blue-50 px-4 py-2 rounded-lg inline-block">
                       Found {matchingResults.length} matching trial{matchingResults.length !== 1 ? 's' : ''}
                     </div>
-                    {matchingResults.map((trial, index) => (
-                      <div key={trial.id} className="border border-gray-200 rounded-2xl p-4 sm:p-6 bg-white hover:shadow-lg transition-all duration-300 animate-slide-up" style={{animationDelay: `${index * 0.1}s`}}>
+                    {matchingResults.map((match, index) => (
+                      <div key={match.trial_id} className="border border-gray-200 rounded-2xl p-4 sm:p-6 bg-white hover:shadow-lg transition-all duration-300 animate-slide-up" style={{animationDelay: `${index * 0.1}s`}}>
                         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-4">
                           <div className="flex-1">
-                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-3">{trial.title}</h3>
-                            <div className="flex flex-wrap gap-2">
-                              <Badge className={`${getPhaseColor(trial.phase || '')} border font-medium px-3 py-1`}> 
-                                {trial.phase}
+                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-3">
+                              {match.trial_details?.title || `Trial ${match.trial_id}`}
+                            </h3>
+                            <div className="flex flex-wrap gap-2 mb-3">
+                              {match.trial_details?.phase && (
+                                <Badge className={`${getPhaseColor(match.trial_details.phase)} border font-medium px-3 py-1`}> 
+                                  {match.trial_details.phase}
+                                </Badge>
+                              )}
+                              {match.trial_details?.status && (
+                                <Badge className={`${getStatusColor(match.trial_details.status)} border font-medium px-3 py-1`}> 
+                                  {match.trial_details.status}
+                                </Badge>
+                              )}
+                              <Badge className={`${getMatchScoreColor(match.match_score)} border font-medium px-3 py-1`}>
+                                {match.match_score}% Match
                               </Badge>
-                              <Badge className={`${getStatusColor(trial.status || '')} border font-medium px-3 py-1`}> 
-                                {trial.status}
-                              </Badge>
                             </div>
+                            <div className="flex items-center gap-2 mb-2">
+                              {getEligibilityIcon(match.eligibility_status)}
+                              <span className={`text-sm font-medium ${match.eligibility_status.toLowerCase() === 'eligible' ? 'text-green-700' : 'text-red-700'}`}>
+                                {match.eligibility_status}
+                              </span>
+                            </div>
+                            <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+                              <strong>Match Reason:</strong> {match.match_reason}
+                            </p>
                           </div>
-                          <Link to={`/trials/${trial.id}`}>
-                            <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 rounded-xl px-4 sm:px-6 h-10 sm:h-11 shadow-lg w-full sm:w-auto">
-                              <ExternalLink className="w-4 h-4 mr-2" />
-                              View Details
-                            </Button>
-                          </Link>
+                          {match.trial_details && (
+                            <Link to={`/trials/${match.trial_details.id}`}>
+                              <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 rounded-xl px-4 sm:px-6 h-10 sm:h-11 shadow-lg w-full sm:w-auto">
+                                <ExternalLink className="w-4 h-4 mr-2" />
+                                View Details
+                              </Button>
+                            </Link>
+                          )}
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                              <Calendar className="w-4 h-4 text-blue-600" />
+                        {match.trial_details && (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <Calendar className="w-4 h-4 text-blue-600" />
+                              </div>
+                              <div>
+                                <div className="text-xs text-gray-500 uppercase tracking-wide">Condition</div>
+                                <div className="font-medium text-gray-900">{match.trial_details.condition}</div>
+                              </div>
                             </div>
-                            <div>
-                              <div className="text-xs text-gray-500 uppercase tracking-wide">Condition</div>
-                              <div className="font-medium text-gray-900">{trial.condition}</div>
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                                <MapPin className="w-4 h-4 text-green-600" />
+                              </div>
+                              <div>
+                                <div className="text-xs text-gray-500 uppercase tracking-wide">Location</div>
+                                <div className="font-medium text-gray-900">{match.trial_details.location}</div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                                <Users className="w-4 h-4 text-purple-600" />
+                              </div>
+                              <div>
+                                <div className="text-xs text-gray-500 uppercase tracking-wide">Matched Patients</div>
+                                <div className="font-medium text-gray-900">{match.trial_details.matched_patients_count || 0}</div>
+                              </div>
                             </div>
                           </div>
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                              <MapPin className="w-4 h-4 text-green-600" />
-                            </div>
-                            <div>
-                              <div className="text-xs text-gray-500 uppercase tracking-wide">Location</div>
-                              <div className="font-medium text-gray-900">{trial.location}</div>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                              <Users className="w-4 h-4 text-purple-600" />
-                            </div>
-                            <div>
-                              <div className="text-xs text-gray-500 uppercase tracking-wide">Matched Patients</div>
-                              <div className="font-medium text-gray-900">{trial.matched_patients_count || 0}</div>
-                            </div>
-                          </div>
-                        </div>
+                        )}
                         <div className="mt-4 pt-4 border-t border-gray-100">
                           <div className="text-xs text-gray-500">
-                            Trial ID: <span className="font-mono">{trial.trial_id}</span>
+                            Trial ID: <span className="font-mono">{match.trial_id}</span>
                           </div>
                         </div>
                       </div>
@@ -335,7 +268,7 @@ const MatchTrials = () => {
                       <Search className="w-8 h-8 text-gray-400" />
                     </div>
                     <h3 className="text-xl font-semibold mb-2 text-gray-900">No matching trials found</h3>
-                    <p className="text-gray-500">No clinical trials match the patient's condition. Try with a different patient.</p>
+                    <p className="text-gray-500">No clinical trials match this patient. The API returned no matches.</p>
                   </div>
                 )
               )
