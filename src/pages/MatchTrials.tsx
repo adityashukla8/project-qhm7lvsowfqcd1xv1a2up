@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Search, MapPin, Users, ExternalLink, Calendar, User, Activity, CheckCircle, XCircle } from "lucide-react"
 import { Link } from 'react-router-dom'
 import { fetchPatients, matchTrials, trialInfo } from '@/functions'
+import EligibilityText from '@/components/EligibilityText'
 
 interface PatientData {
   id: string
@@ -321,7 +322,7 @@ const MatchTrials = () => {
                               <Badge className={`${getStatusColor(trial.status)} border font-medium px-3 py-1`}> 
                                 {trial.status}
                               </Badge>
-                              <Badge className={`${getMatchCriteriaColor(trial.match_criteria)} border font-medium px-3 py-1`}>
+                              <Badge className={`${getMatchCriteriaColor(trial.match_criteria)} border font-medium px-3 py-1`}> 
                                 {trial.match_criteria}
                               </Badge>
                             </div>
@@ -331,12 +332,22 @@ const MatchTrials = () => {
                                 {trial.reason}
                               </span>
                             </div>
-                            <div className="space-y-2 mb-3">
-                              <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">
-                                <strong>Match Requirements:</strong> {trial.match_requirements}
+                            <div className="space-y-3 mb-3">
+                              <div className="bg-blue-50 p-4 rounded-lg">
+                                <div className="text-sm font-semibold text-blue-900 mb-2">Match Requirements:</div>
+                                <EligibilityText 
+                                  text={trial.match_requirements} 
+                                  maxItems={3}
+                                  maxChars={250}
+                                />
                               </div>
-                              <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
-                                <strong>Eligibility:</strong> {trial.eligibility}
+                              <div className="bg-gray-50 p-4 rounded-lg">
+                                <div className="text-sm font-semibold text-gray-900 mb-2">Eligibility Criteria:</div>
+                                <EligibilityText 
+                                  text={trial.eligibility} 
+                                  maxItems={4}
+                                  maxChars={300}
+                                />
                               </div>
                             </div>
                           </div>
