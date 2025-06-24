@@ -1,11 +1,12 @@
 Deno.serve(async (req) => {
   try {
-    const { patientId } = await req.json();
+    const body = await req.json().catch(() => ({}));
+    const { patientId } = body;
     const baseUrl = "https://clinicaltrials-multiagent-502131642989.asia-south1.run.app";
     
-    console.log('Fetching patient data...', { patientId });
+    console.log('Fetching patient data...', { patientId, hasPatientId: !!patientId });
     
-    if (patientId) {
+    if (patientId && patientId.trim()) {
       // Fetch specific patient by ID
       console.log(`Fetching patient with ID: ${patientId}`);
       const response = await fetch(`${baseUrl}/patients/${patientId}`);
@@ -33,7 +34,7 @@ Deno.serve(async (req) => {
       });
     } else {
       // Fetch all patients
-      console.log('Fetching all patients...');
+      console.log('Fetching all patients from /patients endpoint...');
       const response = await fetch(`${baseUrl}/patients`);
       
       if (!response.ok) {
@@ -48,7 +49,7 @@ Deno.serve(async (req) => {
       }
       
       const patients = await response.json();
-      console.log('Patients data received:', patients);
+      console.log('All patients data received:', patients);
       
       return new Response(JSON.stringify({
         success: true,

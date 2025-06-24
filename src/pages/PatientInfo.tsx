@@ -37,7 +37,8 @@ const PatientInfo = () => {
   useEffect(() => {
     const loadPatients = async () => {
       try {
-        console.log('Fetching patients...')
+        console.log('Fetching all patients...')
+        // Call without patientId to get all patients
         const response = await fetchPatients({})
         console.log('API Response:', response)
         
@@ -51,7 +52,7 @@ const PatientInfo = () => {
           setError(null)
         } else {
           console.error('API response error:', response)
-          setError('Failed to fetch patients data')
+          setError('Failed to fetch patients data: ' + (response.error || 'Unknown error'))
           setPatients([])
           setFilteredPatients([])
         }
