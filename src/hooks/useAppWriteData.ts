@@ -35,11 +35,12 @@ export function useAppWriteData<T extends AppWriteDocument>({
       });
 
       if (result.success) {
-        setData(result.data);
+        setData(result.data || []);
       } else {
         setError(result.error || 'Failed to fetch data');
       }
     } catch (err) {
+      console.error('AppWrite data fetch error:', err);
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);
@@ -61,6 +62,7 @@ export function useAppWriteData<T extends AppWriteDocument>({
         throw new Error(result.error || 'Failed to create document');
       }
     } catch (err) {
+      console.error('AppWrite create error:', err);
       setError(err instanceof Error ? err.message : 'Unknown error');
       throw err;
     }
@@ -82,6 +84,7 @@ export function useAppWriteData<T extends AppWriteDocument>({
         throw new Error(result.error || 'Failed to update document');
       }
     } catch (err) {
+      console.error('AppWrite update error:', err);
       setError(err instanceof Error ? err.message : 'Unknown error');
       throw err;
     }
@@ -102,6 +105,7 @@ export function useAppWriteData<T extends AppWriteDocument>({
         throw new Error(result.error || 'Failed to delete document');
       }
     } catch (err) {
+      console.error('AppWrite delete error:', err);
       setError(err instanceof Error ? err.message : 'Unknown error');
       throw err;
     }
@@ -121,6 +125,7 @@ export function useAppWriteData<T extends AppWriteDocument>({
         throw new Error(result.error || 'Failed to get document');
       }
     } catch (err) {
+      console.error('AppWrite get error:', err);
       setError(err instanceof Error ? err.message : 'Unknown error');
       throw err;
     }
