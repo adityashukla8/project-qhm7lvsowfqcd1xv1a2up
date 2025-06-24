@@ -5,11 +5,35 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Search, MapPin, Users, Calendar, ExternalLink, Globe, FileText } from "lucide-react"
-import { Trial } from '@/entities'
 import { Link } from 'react-router-dom'
+import { fetchTrials } from '@/functions'
+import EligibilityText from '@/components/EligibilityText'
 
-interface TrialData extends Trial {
-  id: string
+interface TrialData {
+  trial_id: string
+  title?: string
+  source_url?: string
+  eligibility?: string
+  official_title?: string
+  known_side_effects?: string
+  dsmc_presence?: string
+  enrollment_info?: string
+  objective_summary?: string
+  external_notes?: string
+  sponsor_info?: string
+  patient_experiences?: string
+  statistical_plan?: string
+  intervention_arms?: string
+  sample_size?: string
+  pre_req_for_participation?: string
+  sponsor_contact?: string
+  location_and_site_details?: string
+  monitoring_frequency?: string
+  safety_documents?: string
+  sites?: string
+  patient_faq_summary?: string
+  citations?: string
+  matched_patients_count: number
 }
 
 const Trials = () => {
@@ -19,11 +43,15 @@ const Trials = () => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const fetchTrials = async () => {
+    const loadTrials = async () => {
       try {
-        const trialsData = await Trial.list()
-        setTrials(trialsData)
-        setFilteredTrials(trialsData)
+        const response = await fetchTrials()
+        if (response.success) {
+          setTrials(response.data)
+          setFilteredTrials(response.data)
+        } else {
+          console.error('Error fetching trials:', response.error)
+        }
       } catch (error) {
         console.error('Error fetching trials:', error)
       } finally {
@@ -31,18 +59,37 @@ const Trials = () => {
       }
     }
 
-    fetchTrials()
+    loadTrials()
   }, [])
 
   useEffect(() => {
     const filtered = trials.filter(trial =>
       trial.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      trial.condition?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      trial.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      trial.official_title?.toLowerCase().includes(searchTerm.toLowerCase())
+      trial.official_title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      trial.sites?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      trial.location_and_site_details?.toLowerCase().includes(searchTerm.toLowerCase())
     )
     setFilteredTrials(filtered)
   }, [searchTerm, trials])
+
+  // Helper function to extract phase from title or other fields
+  const extractPhase = (trial: TrialData): string => {
+    const text = `${trial.title || ''} ${trial.official_title || ''}`.toLowerCase()
+    if (text.includes('phase 1') || text.includes('phase i')) return 'Phase 1'
+    if (text.includes('phase 2') || text.includes('phase ii')) return 'Phase 2'
+    if (text.includes('phase 3') || text.includes('phase iii')) return 'Phase 3'
+    if (text.includes('phase 4') || text.includes('phase iv')) return 'Phase 4'
+    return 'Unknown'
+  }
+
+  // Helper function to extract status from enrollment info
+  const extractStatus = (trial: TrialData): string => {
+    const enrollmentText = trial.enrollment_info?.toLowerCase() || ''
+    if (enrollmentText.includes('recruiting') || enrollmentText.includes('enrolling')) return 'recruiting'
+    if (enrollmentText.includes('active') || enrollmentText.includes('ongoing')) return 'active'
+    if (enrollmentText.includes('completed') || enrollmentText.includes('finished')) return 'completed'
+    return 'unknown'
+  }
 
   const getPhaseColor = (phase: string) => {
     switch (phase) {
@@ -107,7 +154,7 @@ const Trials = () => {
               <div className="relative flex-1 max-w-md">
                 <Search className="w-5 h-5 absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <Input 
-                  placeholder="Search trials by title, condition, or location..." 
+                  placeholder="Search trials by title, location, or sites..." 
                   className="pl-12 h-10 sm:h-12 border-0 bg-white shadow-sm rounded-xl"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -120,105 +167,118 @@ const Trials = () => {
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:gap-6">
-            {filteredTrials.map((trial, index) => (
-              <Card key={trial.id} className="card-hover border-0 shadow-lg bg-white/80 backdrop-blur-sm rounded-2xl overflow-hidden animate-slide-up" style={{animationDelay: `${index * 0.1}s`}}>
-                <CardHeader className="pb-4">
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
-                    <div className="flex-1">
-                      <CardTitle className="text-lg sm:text-xl font-bold text-gray-900 mb-2">
-                        {trial.title}
-                      </CardTitle>
-                      {trial.official_title && trial.official_title !== trial.title && (
-                        <p className="text-sm text-gray-600 mb-3">{trial.official_title}</p>
+            {filteredTrials.map((trial, index) => {
+              const phase = extractPhase(trial)
+              const status = extractStatus(trial)
+              
+              return (
+                <Card key={trial.trial_id} className="card-hover border-0 shadow-lg bg-white/80 backdrop-blur-sm rounded-2xl overflow-hidden animate-slide-up" style={{animationDelay: `${index * 0.1}s`}}>
+                  <CardHeader className="pb-4">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+                      <div className="flex-1">
+                        <CardTitle className="text-lg sm:text-xl font-bold text-gray-900 mb-2">
+                          {trial.title || 'Untitled Trial'}
+                        </CardTitle>
+                        {trial.official_title && trial.official_title !== trial.title && (
+                          <p className="text-sm text-gray-600 mb-3">{trial.official_title}</p>
+                        )}
+                        <div className="flex flex-wrap gap-2">
+                          <Badge className={`${getPhaseColor(phase)} border font-medium px-3 py-1`}>
+                            {phase}
+                          </Badge>
+                          <Badge className={`${getStatusColor(status)} border font-medium px-3 py-1`}>
+                            {status}
+                          </Badge>
+                        </div>
+                      </div>
+                      <Link to={`/trials/${trial.trial_id}`}>
+                        <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 rounded-xl px-4 sm:px-6 h-10 sm:h-11 shadow-lg w-full sm:w-auto">
+                          <ExternalLink className="w-4 h-4 mr-2" />
+                          View Details
+                        </Button>
+                      </Link>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                      {trial.objective_summary && (
+                        <div className="flex items-center gap-3 text-gray-600">
+                          <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <Calendar className="w-4 h-4 text-blue-600" />
+                          </div>
+                          <div>
+                            <div className="text-xs text-gray-500 uppercase tracking-wide">Objective</div>
+                            <div className="font-medium text-sm line-clamp-2">{trial.objective_summary}</div>
+                          </div>
+                        </div>
                       )}
-                      <div className="flex flex-wrap gap-2">
-                        <Badge className={`${getPhaseColor(trial.phase || '')} border font-medium px-3 py-1`}>
-                          {trial.phase}
-                        </Badge>
-                        <Badge className={`${getStatusColor(trial.status || '')} border font-medium px-3 py-1`}>
-                          {trial.status}
-                        </Badge>
-                      </div>
-                    </div>
-                    <Link to={`/trials/${trial.id}`}>
-                      <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 rounded-xl px-4 sm:px-6 h-10 sm:h-11 shadow-lg w-full sm:w-auto">
-                        <ExternalLink className="w-4 h-4 mr-2" />
-                        View Details
-                      </Button>
-                    </Link>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="flex items-center gap-3 text-gray-600">
-                      <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <Calendar className="w-4 h-4 text-blue-600" />
-                      </div>
-                      <div>
-                        <div className="text-xs text-gray-500 uppercase tracking-wide">Condition</div>
-                        <div className="font-medium text-sm">{trial.condition}</div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 text-gray-600">
-                      <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                        <MapPin className="w-4 h-4 text-green-600" />
-                      </div>
-                      <div>
-                        <div className="text-xs text-gray-500 uppercase tracking-wide">Location</div>
-                        <div className="font-medium text-sm">{trial.location}</div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 text-gray-600">
-                      <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                        <Users className="w-4 h-4 text-purple-600" />
-                      </div>
-                      <div>
-                        <div className="text-xs text-gray-500 uppercase tracking-wide">Matched Patients</div>
-                        <div className="font-medium text-sm">{trial.matched_patients_count || 0}</div>
-                      </div>
-                    </div>
-                    {trial.source_url && (
+                      {trial.sites && (
+                        <div className="flex items-center gap-3 text-gray-600">
+                          <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                            <MapPin className="w-4 h-4 text-green-600" />
+                          </div>
+                          <div>
+                            <div className="text-xs text-gray-500 uppercase tracking-wide">Sites</div>
+                            <div className="font-medium text-sm line-clamp-2">{trial.sites}</div>
+                          </div>
+                        </div>
+                      )}
                       <div className="flex items-center gap-3 text-gray-600">
-                        <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                          <Globe className="w-4 h-4 text-orange-600" />
+                        <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                          <Users className="w-4 h-4 text-purple-600" />
                         </div>
                         <div>
-                          <div className="text-xs text-gray-500 uppercase tracking-wide">Source</div>
-                          <a 
-                            href={trial.source_url} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="font-medium text-sm text-blue-600 hover:text-blue-800 underline"
-                          >
-                            View Source
-                          </a>
+                          <div className="text-xs text-gray-500 uppercase tracking-wide">Matched Patients</div>
+                          <div className="font-medium text-sm">{trial.matched_patients_count || 0}</div>
+                        </div>
+                      </div>
+                      {trial.source_url && (
+                        <div className="flex items-center gap-3 text-gray-600">
+                          <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                            <Globe className="w-4 h-4 text-orange-600" />
+                          </div>
+                          <div>
+                            <div className="text-xs text-gray-500 uppercase tracking-wide">Source</div>
+                            <a 
+                              href={trial.source_url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="font-medium text-sm text-blue-600 hover:text-blue-800 underline"
+                            >
+                              View Source
+                            </a>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {trial.eligibility && (
+                      <div className="mt-4 pt-4 border-t border-gray-100">
+                        <div className="flex items-start gap-3">
+                          <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center mt-1">
+                            <FileText className="w-4 h-4 text-indigo-600" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Eligibility Criteria</div>
+                            <EligibilityText 
+                              text={trial.eligibility} 
+                              maxItems={3}
+                              maxChars={200}
+                            />
+                          </div>
                         </div>
                       </div>
                     )}
-                  </div>
-                  
-                  {trial.eligibility && (
+                    
                     <div className="mt-4 pt-4 border-t border-gray-100">
-                      <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center mt-1">
-                          <FileText className="w-4 h-4 text-indigo-600" />
-                        </div>
-                        <div className="flex-1">
-                          <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Eligibility Criteria</div>
-                          <p className="text-sm text-gray-700 line-clamp-3">{trial.eligibility}</p>
-                        </div>
+                      <div className="text-xs text-gray-500">
+                        Trial ID: <span className="font-mono">{trial.trial_id}</span>
                       </div>
                     </div>
-                  )}
-                  
-                  <div className="mt-4 pt-4 border-t border-gray-100">
-                    <div className="text-xs text-gray-500">
-                      Trial ID: <span className="font-mono">{trial.trial_id}</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              )
+            })}
           </div>
 
           {filteredTrials.length === 0 && (
