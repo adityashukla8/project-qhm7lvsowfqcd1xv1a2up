@@ -19,16 +19,7 @@ Deno.serve(async (req) => {
     const projectId = Deno.env.get('APPWRITE_PROJECT_ID');
     const apiKey = Deno.env.get('APPWRITE_API_KEY');
     const patientCollectionId = Deno.env.get('APPWRITE_COLLECTION_ID') || '6856f1370028a19d776b';
-    
-    // Try different possible endpoints
-    const possibleEndpoints = [
-      Deno.env.get('APPWRITE_ENDPOINT'),
-      'https://cloud.appwrite.io/v1',
-      'https://appwrite.io/v1',
-      'https://eu-central-1.appwrite.global/v1',
-      'https://us-east-1.appwrite.global/v1',
-      'https://ap-south-1.appwrite.global/v1'
-    ].filter(Boolean);
+    const possibleEndpoints = Deno.env.get('APPWRITE_API_ENDPOINT');
 
     if (!projectId || !apiKey) {
       return new Response(JSON.stringify({
