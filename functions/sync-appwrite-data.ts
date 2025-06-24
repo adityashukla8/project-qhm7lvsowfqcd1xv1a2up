@@ -36,10 +36,11 @@ Deno.serve(async (req) => {
 
     client
       .setEndpoint(endpoint)
-      .setProject(projectId);
+      .setProject(projectId)
+      .setKey(apiKey);
 
     // Set API key for server-side operations
-    client.headers['X-Appwrite-Key'] = apiKey;
+    // client.headers['X-Appwrite-Key'] = apiKey;
 
     const databases = new Databases(client);
 
