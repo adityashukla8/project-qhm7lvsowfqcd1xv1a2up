@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
     const projectId = Deno.env.get('APPWRITE_PROJECT_ID');
     const apiKey = Deno.env.get('APPWRITE_API_KEY');
     const databaseId = Deno.env.get('APPWRITE_DATABASE_ID') || 'patient_info';
-    const patientCollectionId = Deno.env.get('APPWRITE_COLLECTION_ID') || '6856f1370028a19d776b';
+    const patientCollectionId = Deno.env.get('APPWRITE_COLLECTION_ID');
     
     if (!projectId || !apiKey) {
       return new Response(JSON.stringify({
