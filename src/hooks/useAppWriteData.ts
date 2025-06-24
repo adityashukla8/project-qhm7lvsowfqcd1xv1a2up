@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { appwriteSync } from '@/functions';
+import { Client, Databases, Query } from 'appwrite';
 
 interface AppWriteDocument {
   $id: string;
@@ -28,20 +28,55 @@ export function useAppWriteData<T extends AppWriteDocument>({
     setError(null);
     
     try {
-      const result = await appwriteSync({
-        action: 'list',
-        collection,
-        filters
-      });
-
-      if (result.success) {
-        setData(result.data || []);
-      } else {
-        setError(result.error || 'Failed to fetch data');
+      // Initialize AppWrite client for frontend use
+      const client = new Client();
+      
+      const endpoint = import.meta.env.VITE_APPWRITE_ENDPOINT || 'https://cloud.appwrite.io/v1';
+      const projectId = import.meta.env.VITE_APPWRITE_PROJECT_ID;
+      
+      if (!projectId) {
+        throw new Error('Missing VITE_APPWRITE_PROJECT_ID environment variable');
       }
+
+      client
+        .setEndpoint(endpoint)
+        .setProject(projectId);
+
+      const databases = new Databases(client);
+      const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID || 'patient_info';
+
+      // Build queries from filters
+      const queries = [];
+      if (filters) {
+        Object.entries(filters).forEach(([key, value]) => {
+          queries.push(Query.equal(key, value));
+        });
+      }
+
+      const result = await databases.listDocuments(
+        DATABASE_ID,
+        collection,
+        queries.length > 0 ? queries : undefined
+      );
+
+      setData(result.documents as T[]);
     } catch (err) {
       console.error('AppWrite data fetch error:', err);
-      setError(err instanceof Error ? err.message : 'Unknown error');
+      
+      let errorMessage = 'Failed to fetch data';
+      if (err instanceof Error) {
+        if (err.message.includes('Missing')) {
+          errorMessage = 'AppWrite configuration missing. Please check environment variables.';
+        } else if (err.message.includes('401')) {
+          errorMessage = 'Unauthorized access. Please check your AppWrite permissions.';
+        } else if (err.message.includes('404')) {
+          errorMessage = 'Database or collection not found. Please verify your AppWrite setup.';
+        } else {
+          errorMessage = err.message;
+        }
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -49,85 +84,134 @@ export function useAppWriteData<T extends AppWriteDocument>({
 
   const createDocument = async (documentData: Omit<T, '$id' | '$createdAt' | '$updatedAt'>) => {
     try {
-      const result = await appwriteSync({
-        action: 'create',
-        collection,
-        data: documentData
-      });
-
-      if (result.success) {
-        await fetchData(); // Refresh data
-        return result.data;
-      } else {
-        throw new Error(result.error || 'Failed to create document');
+      const client = new Client();
+      const endpoint = import.meta.env.VITE_APPWRITE_ENDPOINT || 'https://cloud.appwrite.io/v1';
+      const projectId = import.meta.env.VITE_APPWRITE_PROJECT_ID;
+      
+      if (!projectId) {
+        throw new Error('Missing VITE_APPWRITE_PROJECT_ID environment variable');
       }
+
+      client
+        .setEndpoint(endpoint)
+        .setProject(projectId);
+
+      const databases = new Databases(client);
+      const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID || 'patient_info';
+
+      const result = await databases.createDocument(
+        DATABASE_ID,
+        collection,
+        'unique()',
+        documentData
+      );
+
+      await fetchData(); // Refresh data
+      return result;
     } catch (err) {
       console.error('AppWrite create error:', err);
-      setError(err instanceof Error ? err.message : 'Unknown error');
-      throw err;
+      const errorMessage = err instanceof Error ? err.message : 'Failed to create document';
+      setError(errorMessage);
+      throw new Error(errorMessage);
     }
   };
 
   const updateDocument = async (documentId: string, documentData: Partial<T>) => {
     try {
-      const result = await appwriteSync({
-        action: 'update',
+      const client = new Client();
+      const endpoint = import.meta.env.VITE_APPWRITE_ENDPOINT || 'https://cloud.appwrite.io/v1';
+      const projectId = import.meta.env.VITE_APPWRITE_PROJECT_ID;
+      
+      if (!projectId) {
+        throw new Error('Missing VITE_APPWRITE_PROJECT_ID environment variable');
+      }
+
+      client
+        .setEndpoint(endpoint)
+        .setProject(projectId);
+
+      const databases = new Databases(client);
+      const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID || 'patient_info';
+
+      const result = await databases.updateDocument(
+        DATABASE_ID,
         collection,
         documentId,
-        data: documentData
-      });
+        documentData
+      );
 
-      if (result.success) {
-        await fetchData(); // Refresh data
-        return result.data;
-      } else {
-        throw new Error(result.error || 'Failed to update document');
-      }
+      await fetchData(); // Refresh data
+      return result;
     } catch (err) {
       console.error('AppWrite update error:', err);
-      setError(err instanceof Error ? err.message : 'Unknown error');
-      throw err;
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update document';
+      setError(errorMessage);
+      throw new Error(errorMessage);
     }
   };
 
   const deleteDocument = async (documentId: string) => {
     try {
-      const result = await appwriteSync({
-        action: 'delete',
+      const client = new Client();
+      const endpoint = import.meta.env.VITE_APPWRITE_ENDPOINT || 'https://cloud.appwrite.io/v1';
+      const projectId = import.meta.env.VITE_APPWRITE_PROJECT_ID;
+      
+      if (!projectId) {
+        throw new Error('Missing VITE_APPWRITE_PROJECT_ID environment variable');
+      }
+
+      client
+        .setEndpoint(endpoint)
+        .setProject(projectId);
+
+      const databases = new Databases(client);
+      const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID || 'patient_info';
+
+      await databases.deleteDocument(
+        DATABASE_ID,
         collection,
         documentId
-      });
+      );
 
-      if (result.success) {
-        await fetchData(); // Refresh data
-        return true;
-      } else {
-        throw new Error(result.error || 'Failed to delete document');
-      }
+      await fetchData(); // Refresh data
+      return true;
     } catch (err) {
       console.error('AppWrite delete error:', err);
-      setError(err instanceof Error ? err.message : 'Unknown error');
-      throw err;
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete document';
+      setError(errorMessage);
+      throw new Error(errorMessage);
     }
   };
 
   const getDocument = async (documentId: string) => {
     try {
-      const result = await appwriteSync({
-        action: 'get',
+      const client = new Client();
+      const endpoint = import.meta.env.VITE_APPWRITE_ENDPOINT || 'https://cloud.appwrite.io/v1';
+      const projectId = import.meta.env.VITE_APPWRITE_PROJECT_ID;
+      
+      if (!projectId) {
+        throw new Error('Missing VITE_APPWRITE_PROJECT_ID environment variable');
+      }
+
+      client
+        .setEndpoint(endpoint)
+        .setProject(projectId);
+
+      const databases = new Databases(client);
+      const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID || 'patient_info';
+
+      const result = await databases.getDocument(
+        DATABASE_ID,
         collection,
         documentId
-      });
+      );
 
-      if (result.success) {
-        return result.data;
-      } else {
-        throw new Error(result.error || 'Failed to get document');
-      }
+      return result;
     } catch (err) {
       console.error('AppWrite get error:', err);
-      setError(err instanceof Error ? err.message : 'Unknown error');
-      throw err;
+      const errorMessage = err instanceof Error ? err.message : 'Failed to get document';
+      setError(errorMessage);
+      throw new Error(errorMessage);
     }
   };
 
