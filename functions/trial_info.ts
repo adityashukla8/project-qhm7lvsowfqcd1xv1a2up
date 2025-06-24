@@ -57,7 +57,7 @@ Deno.serve(async (req) => {
     });
 
   } catch (error) {
-    console.error("Error in trial-info function:", error);
+    console.error("Error in trial_info function:", error);
     return new Response(JSON.stringify({
       success: false,
       error: error.message || "Internal server error"
