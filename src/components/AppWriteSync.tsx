@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { RefreshCw, Database, CheckCircle, AlertCircle } from "lucide-react"
+import { RefreshCw, Database, CheckCircle, AlertCircle, Info } from "lucide-react"
 import { syncAppwriteData } from "@/functions"
 import { useToast } from "@/hooks/use-toast"
 
@@ -18,9 +18,10 @@ export function AppWriteSync() {
       
       if (result.success) {
         setLastSync(result.results)
+        const totalSynced = Object.values(result.results).reduce((a: number, b: number) => a + b, 0)
         toast({
           title: "Sync Successful",
-          description: `Synced ${Object.values(result.results).reduce((a: number, b: number) => a + b, 0)} records`,
+          description: `Synced ${totalSynced} records from AppWrite collection: ${result.collectionUsed}`,
         })
       } else {
         toast({
@@ -30,9 +31,10 @@ export function AppWriteSync() {
         })
       }
     } catch (error) {
+      console.error('Sync error:', error)
       toast({
         title: "Sync Error",
-        description: "Failed to sync data from AppWrite",
+        description: "Failed to sync data from AppWrite. Check console for details.",
         variant: "destructive"
       })
     } finally {
@@ -114,9 +116,15 @@ export function AppWriteSync() {
           </div>
         )}
 
-        <div className="text-xs text-gray-500 flex items-center gap-1">
-          <AlertCircle className="w-3 h-3" />
-          This will sync data from your AppWrite database to the Superdev entities
+        <div className="space-y-2">
+          <div className="text-xs text-gray-500 flex items-center gap-1">
+            <AlertCircle className="w-3 h-3" />
+            This will sync data from your AppWrite database to the Superdev entities
+          </div>
+          <div className="text-xs text-blue-600 flex items-center gap-1">
+            <Info className="w-3 h-3" />
+            Using collection ID: 6856f1370028a19d776b for patient data
+          </div>
         </div>
       </CardContent>
     </Card>

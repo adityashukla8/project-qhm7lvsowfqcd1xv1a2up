@@ -22,6 +22,7 @@ Deno.serve(async (req) => {
     const projectId = Deno.env.get('APPWRITE_PROJECT_ID');
     const apiKey = Deno.env.get('APPWRITE_API_KEY');
     const databaseId = Deno.env.get('APPWRITE_DATABASE_ID') || 'patient_info';
+    const patientCollectionId = Deno.env.get('APPWRITE_COLLECTION_ID') || '6856f1370028a19d776b';
     
     if (!projectId || !apiKey) {
       return new Response(JSON.stringify({
@@ -52,129 +53,150 @@ Deno.serve(async (req) => {
       metrics: 0
     };
 
-    // Sync Patients
+    // Sync Patients from your specific collection
     if (!collection || collection === 'patients') {
       try {
+        console.log(`Fetching patients from collection: ${patientCollectionId}`);
+        
         const patientsResult = await databases.listDocuments(
           databaseId,
-          'patient_info_collection'
+          patientCollectionId,
+          [Query.limit(100)] // Fetch up to 100 patients at a time
         );
 
+        console.log(`Found ${patientsResult.documents.length} patients in AppWrite`);
+
         for (const doc of patientsResult.documents) {
+          console.log('Processing patient:', doc.patient_id || doc.$id);
+          
           const patientData = {
-            patient_id: doc.patient_id,
-            patient_name: doc.patient_name,
-            condition: doc.condition,
-            chemotherapy: doc.chemotherapy || [],
-            radiotherapy: doc.radiotherapy || [],
-            age: doc.age,
-            gender: doc.gender || [],
-            country: doc.country,
-            metastasis: doc.metastasis || [],
-            histology: doc.histology,
-            biomarker: doc.biomarker,
-            ecog_score: doc.ecog_score,
-            condition_recurrence: doc.condition_recurrence || [],
+            patient_id: doc.patient_id || doc.$id,
+            patient_name: doc.patient_name || doc.name || 'Unknown',
+            condition: doc.condition || '',
+            chemotherapy: Array.isArray(doc.chemotherapy) ? doc.chemotherapy : (doc.chemotherapy ? [doc.chemotherapy] : []),
+            radiotherapy: Array.isArray(doc.radiotherapy) ? doc.radiotherapy : (doc.radiotherapy ? [doc.radiotherapy] : []),
+            age: doc.age || 0,
+            gender: Array.isArray(doc.gender) ? doc.gender : (doc.gender ? [doc.gender] : []),
+            country: doc.country || '',
+            metastasis: Array.isArray(doc.metastasis) ? doc.metastasis : (doc.metastasis ? [doc.metastasis] : []),
+            histology: doc.histology || '',
+            biomarker: doc.biomarker || '',
+            ecog_score: doc.ecog_score || 0,
+            condition_recurrence: Array.isArray(doc.condition_recurrence) ? doc.condition_recurrence : (doc.condition_recurrence ? [doc.condition_recurrence] : []),
             status: doc.status || 'pending',
             matched: doc.matched || false,
             matched_trials_count: doc.matched_trials_count || 0
           };
 
           // Check if patient already exists
-          const existingPatients = await superdev.entities.Patient.filter({ patient_id: doc.patient_id });
+          const existingPatients = await superdev.entities.Patient.filter({ 
+            patient_id: patientData.patient_id 
+          });
           
           if (existingPatients.length === 0) {
             await superdev.entities.Patient.create(patientData);
-            syncResults.patients++;
+            console.log('Created new patient:', patientData.patient_id);
           } else {
             await superdev.entities.Patient.update(existingPatients[0].id, patientData);
-            syncResults.patients++;
+            console.log('Updated existing patient:', patientData.patient_id);
           }
+          syncResults.patients++;
         }
       } catch (error) {
-        console.log('No patient collection found or error syncing patients:', error.message);
+        console.error('Error syncing patients:', error);
+        return new Response(JSON.stringify({
+          success: false,
+          error: `Failed to sync patients: ${error.message}`,
+          details: error.stack
+        }), {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        });
       }
     }
 
-    // Sync Trials
+    // Sync Trials (keeping existing logic but with better error handling)
     if (!collection || collection === 'trials') {
       try {
         const trialsResult = await databases.listDocuments(
           databaseId,
-          'trial_info'
+          'trial_info',
+          [Query.limit(100)]
         );
 
         for (const doc of trialsResult.documents) {
           const trialData = {
-            trial_id: doc.trial_id,
-            title: doc.title,
-            official_title: doc.official_title,
-            phase: doc.phase,
-            condition: doc.condition,
-            status: doc.status,
-            location: doc.location,
-            source_url: doc.source_url,
-            eligibility: doc.eligibility,
-            known_side_effects: doc.known_side_effects,
-            dsmc_presence: doc.dsmc_presence,
-            enrollment_info: doc.enrollment_info,
-            objective_summary: doc.objective_summary,
-            external_notes: doc.external_notes,
-            sponsor_info: doc.sponsor_info,
-            patient_experiences: doc.patient_experiences,
-            statistical_plan: doc.statistical_plan,
-            intervention_arms: doc.intervention_arms,
-            sample_size: doc.sample_size,
-            pre_req_for_participation: doc.pre_req_for_participation,
-            sponsor_contact: doc.sponsor_contact,
-            location_and_site_details: doc.location_and_site_details,
-            monitoring_frequency: doc.monitoring_frequency,
-            safety_documents: doc.safety_documents,
-            sites: doc.sites,
-            patient_faq_summary: doc.patient_faq_summary,
-            citations: doc.citations,
+            trial_id: doc.trial_id || doc.$id,
+            title: doc.title || '',
+            official_title: doc.official_title || '',
+            phase: doc.phase || '',
+            condition: doc.condition || '',
+            status: doc.status || '',
+            location: doc.location || '',
+            source_url: doc.source_url || '',
+            eligibility: doc.eligibility || '',
+            known_side_effects: doc.known_side_effects || '',
+            dsmc_presence: doc.dsmc_presence || '',
+            enrollment_info: doc.enrollment_info || '',
+            objective_summary: doc.objective_summary || '',
+            external_notes: doc.external_notes || '',
+            sponsor_info: doc.sponsor_info || '',
+            patient_experiences: doc.patient_experiences || '',
+            statistical_plan: doc.statistical_plan || '',
+            intervention_arms: doc.intervention_arms || '',
+            sample_size: doc.sample_size || '',
+            pre_req_for_participation: doc.pre_req_for_participation || '',
+            sponsor_contact: doc.sponsor_contact || '',
+            location_and_site_details: doc.location_and_site_details || '',
+            monitoring_frequency: doc.monitoring_frequency || '',
+            safety_documents: doc.safety_documents || '',
+            sites: doc.sites || '',
+            patient_faq_summary: doc.patient_faq_summary || '',
+            citations: doc.citations || '',
             matched_patients_count: doc.matched_patients_count || 0
           };
 
           // Check if trial already exists
-          const existingTrials = await superdev.entities.Trial.filter({ trial_id: doc.trial_id });
+          const existingTrials = await superdev.entities.Trial.filter({ 
+            trial_id: trialData.trial_id 
+          });
           
           if (existingTrials.length === 0) {
             await superdev.entities.Trial.create(trialData);
-            syncResults.trials++;
           } else {
             await superdev.entities.Trial.update(existingTrials[0].id, trialData);
-            syncResults.trials++;
           }
+          syncResults.trials++;
         }
       } catch (error) {
         console.log('No trial collection found or error syncing trials:', error.message);
       }
     }
 
-    // Sync Trial Matches
+    // Sync Trial Matches (keeping existing logic but with better error handling)
     if (!collection || collection === 'matches') {
       try {
         const matchesResult = await databases.listDocuments(
           databaseId,
-          'match_info'
+          'match_info',
+          [Query.limit(100)]
         );
 
         for (const doc of matchesResult.documents) {
           const matchData = {
             match_id: doc.match_id || doc.$id,
-            patient_id: doc.patient_id,
-            trial_id: doc.trial_id,
-            match_criteria: doc.match_criteria,
-            reason: doc.reason,
-            match_requirements: doc.match_requirements,
+            patient_id: doc.patient_id || '',
+            trial_id: doc.trial_id || '',
+            match_criteria: doc.match_criteria || '',
+            reason: doc.reason || '',
+            match_requirements: doc.match_requirements || '',
             confidence_score: doc.confidence_score || 0
           };
 
           // Check if match already exists
           const existingMatches = await superdev.entities.TrialMatch.filter({ 
-            patient_id: doc.patient_id,
-            trial_id: doc.trial_id 
+            patient_id: matchData.patient_id,
+            trial_id: matchData.trial_id 
           });
           
           if (existingMatches.length === 0) {
@@ -190,7 +212,8 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({
       success: true,
       message: 'Data sync completed successfully',
-      results: syncResults
+      results: syncResults,
+      collectionUsed: patientCollectionId
     }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
