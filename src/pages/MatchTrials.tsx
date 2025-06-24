@@ -6,13 +6,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Search, MapPin, Users, ExternalLink, Calendar, User, Activity, CheckCircle, XCircle } from "lucide-react"
-import { Trial } from '@/entities'
 import { Link } from 'react-router-dom'
-import { fetchPatients, matchTrials } from '@/functions'
-
-interface TrialData extends Trial {
-  id: string
-}
+import { fetchPatients, matchTrials, trialInfo } from '@/functions'
 
 interface PatientData {
   id: string
@@ -34,18 +29,24 @@ interface PatientData {
   matched_trials_count: number
 }
 
-interface MatchResult {
+interface TrialInfoResult {
   trial_id: string
-  match_score: number
-  match_reason: string
-  eligibility_status: string
-  trial_details?: TrialData
+  match_criteria: string
+  reason: string
+  match_requirements: string
+  title: string
+  phase: string
+  condition: string
+  status: string
+  location: string
+  eligibility: string
+  source_url: string
 }
 
 const MatchTrials = () => {
   const [patientId, setPatientId] = useState('')
   const [patientData, setPatientData] = useState<PatientData | null>(null)
-  const [matchingResults, setMatchingResults] = useState<MatchResult[]>([])
+  const [matchingResults, setMatchingResults] = useState<TrialInfoResult[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const [isFetchingPatient, setIsFetchingPatient] = useState(false)
   const [hasSearched, setHasSearched] = useState(false)
@@ -89,30 +90,24 @@ const MatchTrials = () => {
 
     try {
       console.log('Calling match trials API for patient:', patientData.patient_id)
-      const response = await matchTrials({ patient_id: patientData.patient_id })
-      console.log('Match trials response:', response)
+      const matchResponse = await matchTrials({ patient_id: patientData.patient_id })
+      console.log('Match trials response:', matchResponse)
       
-      if (response.success && response.matches) {
-        // Fetch trial details for each matched trial
-        const matchesWithDetails = await Promise.all(
-          response.matches.map(async (match: MatchResult) => {
-            try {
-              const trials = await Trial.filter({ trial_id: match.trial_id })
-              const trialDetails = trials.length > 0 ? trials[0] : null
-              return {
-                ...match,
-                trial_details: trialDetails
-              }
-            } catch (error) {
-              console.error(`Error fetching trial details for ${match.trial_id}:`, error)
-              return match
-            }
-          })
-        )
+      if (matchResponse.success) {
+        console.log('Match trials completed, now fetching trial info...')
         
-        setMatchingResults(matchesWithDetails)
+        // Call trial_info API after matchtrials completes
+        const trialInfoResponse = await trialInfo({ patient_id: patientData.patient_id })
+        console.log('Trial info response:', trialInfoResponse)
+        
+        if (trialInfoResponse.success && trialInfoResponse.trials) {
+          setMatchingResults(trialInfoResponse.trials)
+        } else {
+          console.error('Trial info API error:', trialInfoResponse)
+          setMatchingResults([])
+        }
       } else {
-        console.error('Match trials API error:', response)
+        console.error('Match trials API error:', matchResponse)
         setMatchingResults([])
       }
       
@@ -138,21 +133,24 @@ const MatchTrials = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'recruiting': return 'bg-green-100 text-green-800'
-      case 'active': return 'bg-blue-100 text-blue-800'
-      case 'completed': return 'bg-gray-100 text-gray-800'
+      case 'Recruiting': return 'bg-green-100 text-green-800'
+      case 'Active': return 'bg-blue-100 text-blue-800'
+      case 'Completed': return 'bg-gray-100 text-gray-800'
       default: return 'bg-gray-100 text-gray-800'
     }
   }
 
-  const getMatchScoreColor = (score: number) => {
-    if (score >= 80) return 'bg-green-100 text-green-800 border-green-200'
-    if (score >= 60) return 'bg-yellow-100 text-yellow-800 border-yellow-200'
-    return 'bg-red-100 text-red-800 border-red-200'
+  const getMatchCriteriaColor = (criteria: string) => {
+    switch (criteria.toLowerCase()) {
+      case 'match': return 'bg-green-100 text-green-800 border-green-200'
+      case 'partial match': return 'bg-yellow-100 text-yellow-800 border-yellow-200'
+      case 'no match': return 'bg-red-100 text-red-800 border-red-200'
+      default: return 'bg-gray-100 text-gray-800 border-gray-200'
+    }
   }
 
-  const getEligibilityIcon = (status: string) => {
-    return status.toLowerCase() === 'eligible' ? 
+  const getMatchIcon = (criteria: string) => {
+    return criteria.toLowerCase() === 'match' ? 
       <CheckCircle className="w-4 h-4 text-green-600" /> : 
       <XCircle className="w-4 h-4 text-red-600" />
   }
@@ -301,6 +299,7 @@ const MatchTrials = () => {
                 <div className="text-center py-12">
                   <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600 mx-auto mb-4"></div>
                   <p className="text-gray-600 text-lg">Finding matching clinical trials...</p>
+                  <p className="text-gray-500 text-sm mt-2">Processing match criteria and fetching trial details...</p>
                 </div>
               ) : hasSearched ? (
                 matchingResults.length > 0 ? (
@@ -308,81 +307,77 @@ const MatchTrials = () => {
                     <div className="text-sm text-gray-600 bg-blue-50 px-4 py-2 rounded-lg inline-block">
                       Found {matchingResults.length} matching trial{matchingResults.length !== 1 ? 's' : ''}
                     </div>
-                    {matchingResults.map((match, index) => (
-                      <div key={match.trial_id} className="border border-gray-200 rounded-2xl p-4 sm:p-6 bg-white hover:shadow-lg transition-all duration-300 animate-slide-up" style={{animationDelay: `${index * 0.1}s`}}>
+                    {matchingResults.map((trial, index) => (
+                      <div key={trial.trial_id} className="border border-gray-200 rounded-2xl p-4 sm:p-6 bg-white hover:shadow-lg transition-all duration-300 animate-slide-up" style={{animationDelay: `${index * 0.1}s`}}>
                         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-4">
                           <div className="flex-1">
                             <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-3">
-                              {match.trial_details?.title || `Trial ${match.trial_id}`}
+                              {trial.title}
                             </h3>
                             <div className="flex flex-wrap gap-2 mb-3">
-                              {match.trial_details?.phase && (
-                                <Badge className={`${getPhaseColor(match.trial_details.phase)} border font-medium px-3 py-1`}> 
-                                  {match.trial_details.phase}
-                                </Badge>
-                              )}
-                              {match.trial_details?.status && (
-                                <Badge className={`${getStatusColor(match.trial_details.status)} border font-medium px-3 py-1`}> 
-                                  {match.trial_details.status}
-                                </Badge>
-                              )}
-                              <Badge className={`${getMatchScoreColor(match.match_score)} border font-medium px-3 py-1`}>
-                                {match.match_score}% Match
+                              <Badge className={`${getPhaseColor(trial.phase)} border font-medium px-3 py-1`}> 
+                                {trial.phase}
+                              </Badge>
+                              <Badge className={`${getStatusColor(trial.status)} border font-medium px-3 py-1`}> 
+                                {trial.status}
+                              </Badge>
+                              <Badge className={`${getMatchCriteriaColor(trial.match_criteria)} border font-medium px-3 py-1`}>
+                                {trial.match_criteria}
                               </Badge>
                             </div>
-                            <div className="flex items-center gap-2 mb-2">
-                              {getEligibilityIcon(match.eligibility_status)}
-                              <span className={`text-sm font-medium ${match.eligibility_status.toLowerCase() === 'eligible' ? 'text-green-700' : 'text-red-700'}`}>
-                                {match.eligibility_status}
+                            <div className="flex items-center gap-2 mb-3">
+                              {getMatchIcon(trial.match_criteria)}
+                              <span className={`text-sm font-medium ${trial.match_criteria.toLowerCase() === 'match' ? 'text-green-700' : 'text-red-700'}`}>
+                                {trial.reason}
                               </span>
                             </div>
-                            <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
-                              <strong>Match Reason:</strong> {match.match_reason}
-                            </p>
+                            <div className="space-y-2 mb-3">
+                              <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">
+                                <strong>Match Requirements:</strong> {trial.match_requirements}
+                              </div>
+                              <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+                                <strong>Eligibility:</strong> {trial.eligibility}
+                              </div>
+                            </div>
                           </div>
-                          {match.trial_details && (
-                            <Link to={`/trials/${match.trial_details.id}`}>
-                              <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 rounded-xl px-4 sm:px-6 h-10 sm:h-11 shadow-lg w-full sm:w-auto">
-                                <ExternalLink className="w-4 h-4 mr-2" />
-                                View Details
-                              </Button>
-                            </Link>
-                          )}
+                          <div className="flex flex-col gap-2">
+                            {trial.source_url && (
+                              <a href={trial.source_url} target="_blank" rel="noopener noreferrer">
+                                <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 rounded-xl px-4 sm:px-6 h-10 sm:h-11 shadow-lg w-full">
+                                  <ExternalLink className="w-4 h-4 mr-2" />
+                                  View on ClinicalTrials.gov
+                                </Button>
+                              </a>
+                            )}
+                          </div>
                         </div>
-                        {match.trial_details && (
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <Calendar className="w-4 h-4 text-blue-600" />
-                              </div>
-                              <div>
-                                <div className="text-xs text-gray-500 uppercase tracking-wide">Condition</div>
-                                <div className="font-medium text-gray-900">{match.trial_details.condition}</div>
-                              </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                              <Calendar className="w-4 h-4 text-blue-600" />
                             </div>
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                                <MapPin className="w-4 h-4 text-green-600" />
-                              </div>
-                              <div>
-                                <div className="text-xs text-gray-500 uppercase tracking-wide">Location</div>
-                                <div className="font-medium text-gray-900">{match.trial_details.location}</div>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                                <Users className="w-4 h-4 text-purple-600" />
-                              </div>
-                              <div>
-                                <div className="text-xs text-gray-500 uppercase tracking-wide">Matched Patients</div>
-                                <div className="font-medium text-gray-900">{match.trial_details.matched_patients_count || 0}</div>
-                              </div>
+                            <div>
+                              <div className="text-xs text-gray-500 uppercase tracking-wide">Condition</div>
+                              <div className="font-medium text-gray-900">{trial.condition}</div>
                             </div>
                           </div>
-                        )}
-                        <div className="mt-4 pt-4 border-t border-gray-100">
-                          <div className="text-xs text-gray-500">
-                            Trial ID: <span className="font-mono">{match.trial_id}</span>
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                              <MapPin className="w-4 h-4 text-green-600" />
+                            </div>
+                            <div>
+                              <div className="text-xs text-gray-500 uppercase tracking-wide">Location</div>
+                              <div className="font-medium text-gray-900">{trial.location}</div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                              <Users className="w-4 h-4 text-purple-600" />
+                            </div>
+                            <div>
+                              <div className="text-xs text-gray-500 uppercase tracking-wide">Trial ID</div>
+                              <div className="font-medium text-gray-900 font-mono">{trial.trial_id}</div>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -394,7 +389,7 @@ const MatchTrials = () => {
                       <Search className="w-8 h-8 text-gray-400" />
                     </div>
                     <h3 className="text-xl font-semibold mb-2 text-gray-900">No matching trials found</h3>
-                    <p className="text-gray-500">No clinical trials match this patient. The API returned no matches.</p>
+                    <p className="text-gray-500">No clinical trials match this patient's criteria.</p>
                   </div>
                 )
               )
