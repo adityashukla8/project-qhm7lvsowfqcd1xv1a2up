@@ -159,11 +159,137 @@ const MatchTrials = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50">
-      {/* ... keep existing code (header) ... */}
+      <div className="gradient-bg-medical">
+        <header className="px-4 sm:px-6 py-6 sm:py-8">
+          <div className="flex items-center gap-4">
+            <SidebarTrigger className="text-white hover:bg-white/20" />
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white">Match Trials</h1>
+              <p className="text-blue-100 text-base sm:text-lg">Find suitable clinical trials for patients</p>
+            </div>
+          </div>
+        </header>
+      </div>
       
       <main className="p-4 sm:p-8 -mt-4 relative z-10 max-w-6xl mx-auto">
         <div className="space-y-6 sm:space-y-8 animate-slide-up">
-          {/* ... keep existing code (Patient Search and Patient Details sections) ... */}
+          {/* Patient Search */}
+          <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm rounded-2xl overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100">
+              <CardTitle className="flex items-center gap-3 text-lg sm:text-xl">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl flex items-center justify-center">
+                  <Search className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                </div>
+                Patient Search
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 sm:p-8 space-y-4 sm:space-y-6">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1 space-y-2">
+                  <Label htmlFor="patientId" className="text-sm font-semibold text-gray-700">Patient ID</Label>
+                  <Input 
+                    id="patientId" 
+                    placeholder="Enter patient ID to search (e.g., P001, P002, etc.)"
+                    className="h-10 sm:h-12 border-0 bg-gray-50 rounded-xl"
+                    value={patientId}
+                    onChange={(e) => setPatientId(e.target.value)}
+                  />
+                </div>
+                <div className="flex items-end">
+                  <Button 
+                    className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 rounded-xl px-6 h-10 sm:h-12 shadow-lg w-full sm:w-auto"
+                    onClick={handleFetchPatient}
+                    disabled={isFetchingPatient}
+                  >
+                    <Search className="w-4 h-4 mr-2" />
+                    {isFetchingPatient ? 'Searching...' : 'Fetch Patient'}
+                  </Button>
+                </div>
+              </div>
+              {!patientData && !isFetchingPatient && (
+                <div className="text-sm text-gray-600 bg-blue-50 px-4 py-3 rounded-lg">
+                  <strong>Tip:</strong> Try patient IDs like P001, P002, P003, etc. Make sure the patient exists in the external API.
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Patient Details */}
+          {patientData && (
+            <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm rounded-2xl overflow-hidden">
+              <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 border-b border-green-100">
+                <CardTitle className="flex items-center gap-3 text-lg sm:text-xl">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-green-600 to-green-700 rounded-xl flex items-center justify-center">
+                    <User className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                  </div>
+                  Patient Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4 sm:p-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                  <div className="space-y-2">
+                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Patient Name</Label>
+                    <p className="font-medium text-gray-900">{patientData.patient_name}</p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Age</Label>
+                    <p className="font-medium text-gray-900">{patientData.age}</p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Gender</Label>
+                    <p className="font-medium text-gray-900">{Array.isArray(patientData.gender) ? patientData.gender.join(', ') : patientData.gender}</p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Condition</Label>
+                    <p className="font-medium text-gray-900">{patientData.condition}</p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Country</Label>
+                    <p className="font-medium text-gray-900">{patientData.country}</p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs text-gray-500 uppercase tracking-wide">ECOG Score</Label>
+                    <p className="font-medium text-gray-900">{patientData.ecog_score}</p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Histology</Label>
+                    <p className="font-medium text-gray-900">{patientData.histology}</p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Biomarker</Label>
+                    <p className="font-medium text-gray-900">{patientData.biomarker}</p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Chemotherapy</Label>
+                    <p className="font-medium text-gray-900">{Array.isArray(patientData.chemotherapy) ? patientData.chemotherapy.join(', ') : patientData.chemotherapy}</p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Radiotherapy</Label>
+                    <p className="font-medium text-gray-900">{Array.isArray(patientData.radiotherapy) ? patientData.radiotherapy.join(', ') : patientData.radiotherapy}</p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Metastasis</Label>
+                    <p className="font-medium text-gray-900">{Array.isArray(patientData.metastasis) ? patientData.metastasis.join(', ') : patientData.metastasis}</p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Condition Recurrence</Label>
+                    <p className="font-medium text-gray-900">{Array.isArray(patientData.condition_recurrence) ? patientData.condition_recurrence.join(', ') : patientData.condition_recurrence}</p>
+                  </div>
+                </div>
+                
+                <div className="mt-6 pt-6 border-t border-gray-100">
+                  <Button 
+                    className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white border-0 rounded-xl px-6 h-10 sm:h-12 shadow-lg"
+                    onClick={handleFindTrials}
+                    disabled={isSearching}
+                  >
+                    <Activity className="w-4 h-4 mr-2" />
+                    {isSearching ? 'Finding Trials...' : 'Match Clinical Trials'}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Matching Results */}
           <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm rounded-2xl overflow-hidden">
