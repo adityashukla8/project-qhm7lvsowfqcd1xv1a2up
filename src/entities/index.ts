@@ -5,5 +5,4 @@ export const ProcessingMetric = superdevClient.entity("ProcessingMetric");
 export const Summary = superdevClient.entity("Summary");
 export const Trial = superdevClient.entity("Trial");
 export const TrialMatch = superdevClient.entity("TrialMatch");
-export const WorkflowExecution = superdevClient.entity("WorkflowExecution");
 export const User = superdevClient.auth;

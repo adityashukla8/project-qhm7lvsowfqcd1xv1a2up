@@ -12,7 +12,6 @@ import Trials from "./pages/Trials";
 import TrialDetail from "./pages/TrialDetail";
 import PatientInfo from "./pages/PatientInfo";
 import ProtocolOptimization from "./pages/ProtocolOptimization";
-import AgenticWorkflow from "./pages/AgenticWorkflow";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,7 +34,6 @@ const App = () => (
                 <Route path="/trials/:id" element={<TrialDetail />} />
                 <Route path="/patient-info" element={<PatientInfo />} />
                 <Route path="/protocol-optimization" element={<ProtocolOptimization />} />
-                <Route path="/agentic-workflow" element={<AgenticWorkflow />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

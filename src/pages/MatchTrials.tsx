@@ -5,11 +5,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
-import { Search, MapPin, Users, ExternalLink, Calendar, User, Activity, Zap } from "lucide-react"
+import { Search, MapPin, Users, ExternalLink, Calendar, User, Activity } from "lucide-react"
 import { Trial, Patient } from '@/entities'
 import { Link } from 'react-router-dom'
-import { runAgenticWorkflow } from "@/functions"
-import { useToast } from "@/hooks/use-toast"
 
 interface TrialData extends Trial {
   id: string
@@ -26,8 +24,6 @@ const MatchTrials = () => {
   const [isSearching, setIsSearching] = useState(false)
   const [isFetchingPatient, setIsFetchingPatient] = useState(false)
   const [hasSearched, setHasSearched] = useState(false)
-  const [isRunningWorkflow, setIsRunningWorkflow] = useState(false)
-  const { toast } = useToast()
 
   const handleFetchPatient = async () => {
     if (!patientId.trim()) {
@@ -82,48 +78,6 @@ const MatchTrials = () => {
       setHasSearched(true)
     } finally {
       setIsSearching(false)
-    }
-  }
-
-  const handleRunAgenticWorkflow = async () => {
-    if (!patientData) {
-      toast({
-        title: "No Patient Selected",
-        description: "Please fetch patient data first",
-        variant: "destructive"
-      })
-      return
-    }
-
-    setIsRunningWorkflow(true)
-    try {
-      const result = await runAgenticWorkflow({
-        patient_id: patientData.patient_id,
-        workflow_type: 'trial_matching'
-      })
-
-      if (result.success) {
-        toast({
-          title: "Agentic Workflow Started",
-          description: "AI agents are now analyzing the patient for optimal trial matches",
-        })
-        
-        // Optionally refresh the patient data after workflow
-        setTimeout(async () => {
-          await handleFetchPatient()
-        }, 2000)
-      } else {
-        throw new Error(result.error || 'Unknown error')
-      }
-    } catch (error) {
-      console.error('Agentic workflow error:', error)
-      toast({
-        title: "Workflow Failed",
-        description: error.message || "Failed to start agentic workflow",
-        variant: "destructive"
-      })
-    } finally {
-      setIsRunningWorkflow(false)
     }
   }
 
@@ -261,7 +215,7 @@ const MatchTrials = () => {
                   </div>
                 </div>
                 
-                <div className="mt-6 pt-6 border-t border-gray-100 flex flex-col sm:flex-row gap-4">
+                <div className="mt-6 pt-6 border-t border-gray-100">
                   <Button 
                     className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white border-0 rounded-xl px-6 h-10 sm:h-12 shadow-lg"
                     onClick={handleFindTrials}
@@ -269,15 +223,6 @@ const MatchTrials = () => {
                   >
                     <Activity className="w-4 h-4 mr-2" />
                     {isSearching ? 'Finding Trials...' : 'Find Matching Trials'}
-                  </Button>
-                  
-                  <Button 
-                    className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white border-0 rounded-xl px-6 h-10 sm:h-12 shadow-lg"
-                    onClick={handleRunAgenticWorkflow}
-                    disabled={isRunningWorkflow}
-                  >
-                    <Zap className="w-4 h-4 mr-2" />
-                    {isRunningWorkflow ? 'Starting AI Analysis...' : 'Run AI Workflow'}
                   </Button>
                 </div>
               </CardContent>
