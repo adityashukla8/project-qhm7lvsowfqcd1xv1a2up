@@ -96,7 +96,7 @@ const MatchTrials = () => {
       if (matchResponse.success) {
         console.log('Match trials completed, now fetching trial info...')
         
-        Call trial_info API after matchtrials completes
+        // Call trial_info API after matchtrials completes
         const trialInfoResponse = await trialInfo({ patient_id: patientData.patient_id })
         console.log('Trial info response:', trialInfoResponse)
         
