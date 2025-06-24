@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Search, MapPin, Users, ExternalLink, Calendar, User, Activity, Zap } from "lucide-react"
 import { useAppWriteData } from '@/hooks/useAppWriteData'
 import { Link } from 'react-router-dom'
-import { runAgenticWorkflow } from "@/functions"
+import { runAgenticWorkflow, appwriteSync } from "@/functions"
 import { useToast } from "@/hooks/use-toast"
 
 interface TrialDocument {
@@ -89,24 +89,18 @@ const MatchTrials = () => {
 
     setIsFetchingPatient(true)
     try {
-      // Search for patient by patient_id field
-      const result = await fetch('/api/functions/appwrite-sync', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'list',
-          collection: 'patient_info_collection',
-          filters: { patient_id: patientId.trim() }
-        })
+      // Use the appwriteSync function instead of direct fetch
+      const result = await appwriteSync({
+        action: 'list',
+        collection: 'patient_info_collection',
+        filters: { patient_id: patientId.trim() }
       });
-
-      const response = await result.json();
       
-      if (response.success && response.data.length > 0) {
-        setPatientData(response.data[0]);
+      if (result.success && result.data.length > 0) {
+        setPatientData(result.data[0]);
         toast({
           title: "Patient Found",
-          description: `Loaded data for ${response.data[0].patient_name}`,
+          description: `Loaded data for ${result.data[0].patient_name}`,
         })
       } else {
         toast({
@@ -154,20 +148,15 @@ const MatchTrials = () => {
         return
       }
 
-      // Fetch trial details for matched trials
+      // Fetch trial details for matched trials using appwriteSync function
       const trialPromises = matchTrialIds.map(async (trialId) => {
         try {
-          const result = await fetch('/api/functions/appwrite-sync', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              action: 'list',
-              collection: 'trial_info',
-              filters: { trial_id: trialId }
-            })
+          const result = await appwriteSync({
+            action: 'list',
+            collection: 'trial_info',
+            filters: { trial_id: trialId }
           });
-          const response = await result.json();
-          return response.success && response.data.length > 0 ? response.data[0] : null;
+          return result.success && result.data.length > 0 ? result.data[0] : null;
         } catch (error) {
           console.error(`Error fetching trial ${trialId}:`, error);
           return null;
