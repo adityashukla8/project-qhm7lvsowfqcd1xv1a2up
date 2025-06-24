@@ -15,7 +15,7 @@ Deno.serve(async (req) => {
 
     console.log(`Fetching trial info for patient: ${patient_id}`);
 
-    const apiUrl = "https://<your-cloud-run-url>/trial_info"; // Replace this
+    const apiUrl = "https://clinicaltrials-multiagent-502131642989.asia-south1.run.app/trial_info";
 
     const response = await fetch(apiUrl, {
       method: "POST",
