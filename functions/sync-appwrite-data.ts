@@ -15,36 +15,87 @@ Deno.serve(async (req) => {
     const token = authHeader.split(' ')[1];
     superdev.auth.setToken(token);
 
-    // Initialize AppWrite client
-    const client = new Client();
-    
-    const endpoint = Deno.env.get('APPWRITE_ENDPOINT') || 'https://cloud.appwrite.io/v1';
+    // Get environment variables
     const projectId = Deno.env.get('APPWRITE_PROJECT_ID');
     const apiKey = Deno.env.get('APPWRITE_API_KEY');
-    const databaseId = Deno.env.get('APPWRITE_DATABASE_ID') || 'patient_info';
-    const patientCollectionId = Deno.env.get('APPWRITE_COLLECTION_ID');
+    const patientCollectionId = Deno.env.get('APPWRITE_COLLECTION_ID') || '6856f1370028a19d776b';
     
+    // Try different possible endpoints
+    const possibleEndpoints = [
+      Deno.env.get('APPWRITE_ENDPOINT'),
+      'https://cloud.appwrite.io/v1',
+      'https://appwrite.io/v1',
+      'https://eu-central-1.appwrite.global/v1',
+      'https://us-east-1.appwrite.global/v1',
+      'https://ap-south-1.appwrite.global/v1'
+    ].filter(Boolean);
+
     if (!projectId || !apiKey) {
       return new Response(JSON.stringify({
         success: false,
-        error: 'Missing required environment variables: APPWRITE_PROJECT_ID or APPWRITE_API_KEY'
+        error: 'Missing required environment variables: APPWRITE_PROJECT_ID or APPWRITE_API_KEY',
+        debug: {
+          hasProjectId: !!projectId,
+          hasApiKey: !!apiKey,
+          patientCollectionId
+        }
       }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
       });
     }
 
-    client
-      .setEndpoint(endpoint)
-      .setProject(projectId)
-      .setKey(apiKey);
-
-    // Set API key for server-side operations
-    // client.headers['X-Appwrite-Key'] = apiKey;
-
-    const databases = new Databases(client);
+    console.log('Attempting to connect to AppWrite with:', {
+      projectId,
+      patientCollectionId,
+      endpoints: possibleEndpoints
+    });
 
     const { collection } = await req.json();
+    let client;
+    let databases;
+    let workingEndpoint;
+
+    // Try each endpoint until one works
+    for (const endpoint of possibleEndpoints) {
+      try {
+        console.log(`Trying endpoint: ${endpoint}`);
+        
+        client = new Client();
+        client
+          .setEndpoint(endpoint)
+          .setProject(projectId);
+
+        // Set API key for server-side operations
+        client.headers['X-Appwrite-Key'] = apiKey;
+        
+        databases = new Databases(client);
+        
+        // Test the connection by trying to list databases
+        await databases.list();
+        workingEndpoint = endpoint;
+        console.log(`Successfully connected to: ${endpoint}`);
+        break;
+      } catch (error) {
+        console.log(`Failed to connect to ${endpoint}:`, error.message);
+        continue;
+      }
+    }
+
+    if (!workingEndpoint) {
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Could not connect to any AppWrite endpoint. Please check your project region and endpoint configuration.',
+        debug: {
+          projectId,
+          triedEndpoints: possibleEndpoints,
+          suggestion: 'Make sure your APPWRITE_ENDPOINT environment variable matches your project region'
+        }
+      }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
 
     let syncResults = {
       patients: 0,
@@ -54,15 +105,42 @@ Deno.serve(async (req) => {
       metrics: 0
     };
 
-    // Sync Patients from your specific collection
-    if (!collection || collection === 'patient_info_collection') {
+    // Try to determine the database ID by listing databases
+    let databaseId = Deno.env.get('APPWRITE_DATABASE_ID');
+    
+    if (!databaseId) {
       try {
-        console.log(`Fetching patients from collection: ${patientCollectionId}`);
+        const databasesList = await databases.list();
+        if (databasesList.databases.length > 0) {
+          databaseId = databasesList.databases[0].$id;
+          console.log(`Using database: ${databaseId}`);
+        } else {
+          throw new Error('No databases found in the project');
+        }
+      } catch (error) {
+        return new Response(JSON.stringify({
+          success: false,
+          error: 'Could not determine database ID. Please set APPWRITE_DATABASE_ID environment variable.',
+          debug: {
+            error: error.message,
+            suggestion: 'Check your AppWrite console for the correct database ID'
+          }
+        }), {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+    }
+
+    // Sync Patients from your specific collection
+    if (!collection || collection === 'patients') {
+      try {
+        console.log(`Fetching patients from database: ${databaseId}, collection: ${patientCollectionId}`);
         
         const patientsResult = await databases.listDocuments(
           databaseId,
           patientCollectionId,
-          [Query.limit(100)] // Fetch up to 100 patients at a time
+          [Query.limit(100)]
         );
 
         console.log(`Found ${patientsResult.documents.length} patients in AppWrite`);
@@ -108,7 +186,15 @@ Deno.serve(async (req) => {
         return new Response(JSON.stringify({
           success: false,
           error: `Failed to sync patients: ${error.message}`,
-          details: error.stack
+          debug: {
+            endpoint: workingEndpoint,
+            databaseId,
+            patientCollectionId,
+            errorType: error.type || 'Unknown',
+            suggestion: error.message.includes('Collection') ? 
+              'Check if the collection ID is correct in your AppWrite console' :
+              'Verify your database and collection permissions'
+          }
         }), {
           status: 500,
           headers: { "Content-Type": "application/json" },
@@ -116,8 +202,8 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Sync Trials (keeping existing logic but with better error handling)
-    if (!collection || collection === 'trial_info') {
+    // Sync other collections with similar error handling...
+    if (!collection || collection === 'trials') {
       try {
         const trialsResult = await databases.listDocuments(
           databaseId,
@@ -157,7 +243,6 @@ Deno.serve(async (req) => {
             matched_patients_count: doc.matched_patients_count || 0
           };
 
-          // Check if trial already exists
           const existingTrials = await superdev.entities.Trial.filter({ 
             trial_id: trialData.trial_id 
           });
@@ -174,47 +259,15 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Sync Trial Matches (keeping existing logic but with better error handling)
-    if (!collection || collection === 'match_info') {
-      try {
-        const matchesResult = await databases.listDocuments(
-          databaseId,
-          'match_info',
-          [Query.limit(100)]
-        );
-
-        for (const doc of matchesResult.documents) {
-          const matchData = {
-            match_id: doc.match_id || doc.$id,
-            patient_id: doc.patient_id || '',
-            trial_id: doc.trial_id || '',
-            match_criteria: doc.match_criteria || '',
-            reason: doc.reason || '',
-            match_requirements: doc.match_requirements || '',
-            confidence_score: doc.confidence_score || 0
-          };
-
-          // Check if match already exists
-          const existingMatches = await superdev.entities.TrialMatch.filter({ 
-            patient_id: matchData.patient_id,
-            trial_id: matchData.trial_id 
-          });
-          
-          if (existingMatches.length === 0) {
-            await superdev.entities.TrialMatch.create(matchData);
-            syncResults.matches++;
-          }
-        }
-      } catch (error) {
-        console.log('No match collection found or error syncing matches:', error.message);
-      }
-    }
-
     return new Response(JSON.stringify({
       success: true,
       message: 'Data sync completed successfully',
       results: syncResults,
-      collectionUsed: patientCollectionId
+      debug: {
+        endpoint: workingEndpoint,
+        databaseId,
+        patientCollectionId
+      }
     }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
@@ -226,7 +279,10 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({
       success: false,
       error: error.message || 'Internal server error',
-      details: error.stack
+      debug: {
+        errorType: error.type || 'Unknown',
+        stack: error.stack
+      }
     }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
