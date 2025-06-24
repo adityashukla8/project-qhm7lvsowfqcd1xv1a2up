@@ -32,17 +32,34 @@ const PatientInfo = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedPatient, setSelectedPatient] = useState<PatientData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const loadPatients = async () => {
       try {
+        console.log('Fetching patients...')
         const response = await fetchPatients({})
+        console.log('API Response:', response)
+        
         if (response.success && response.patients) {
-          setPatients(response.patients)
-          setFilteredPatients(response.patients)
+          // Ensure patients is an array
+          const patientsArray = Array.isArray(response.patients) ? response.patients : []
+          console.log('Patients array:', patientsArray)
+          
+          setPatients(patientsArray)
+          setFilteredPatients(patientsArray)
+          setError(null)
+        } else {
+          console.error('API response error:', response)
+          setError('Failed to fetch patients data')
+          setPatients([])
+          setFilteredPatients([])
         }
       } catch (error) {
         console.error('Error loading patients:', error)
+        setError('Error loading patients: ' + (error instanceof Error ? error.message : 'Unknown error'))
+        setPatients([])
+        setFilteredPatients([])
       } finally {
         setLoading(false)
       }
@@ -52,13 +69,15 @@ const PatientInfo = () => {
   }, [])
 
   useEffect(() => {
-    const filtered = patients.filter(patient =>
-      patient.patient_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      patient.patient_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      patient.condition?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      patient.country?.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-    setFilteredPatients(filtered)
+    if (Array.isArray(patients)) {
+      const filtered = patients.filter(patient =>
+        patient.patient_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        patient.patient_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        patient.condition?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        patient.country?.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      setFilteredPatients(filtered)
+    }
   }, [searchTerm, patients])
 
   const getStatusColor = (status: string) => {
@@ -87,6 +106,35 @@ const PatientInfo = () => {
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600"></div>
           </div>
+        </main>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50">
+        <div className="gradient-bg-medical">
+          <header className="px-4 sm:px-6 py-6 sm:py-8">
+            <div className="flex items-center gap-4">
+              <SidebarTrigger className="text-white hover:bg-white/20" />
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-white">Patient Information</h1>
+                <p className="text-blue-100 text-base sm:text-lg">Manage patient data and profiles</p>
+              </div>
+            </div>
+          </header>
+        </div>
+        <main className="p-4 sm:p-8 -mt-4 relative z-10">
+          <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm rounded-2xl">
+            <CardContent className="text-center py-12">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Users className="w-8 h-8 text-red-600" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2 text-gray-900">Error Loading Patients</h3>
+              <p className="text-gray-500">{error}</p>
+            </CardContent>
+          </Card>
         </main>
       </div>
     )
@@ -211,7 +259,90 @@ const PatientInfo = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-4 sm:p-6 space-y-6">
-                    {/* ... keep existing code (patient details sections) ... */}
+                    {/* Basic Information */}
+                    <div>
+                      <h4 className="font-semibold text-gray-900 mb-3">Basic Information</h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <span className="text-xs text-gray-500 uppercase tracking-wide">Patient ID</span>
+                          <p className="font-medium text-gray-900">{selectedPatient.patient_id}</p>
+                        </div>
+                        <div>
+                          <span className="text-xs text-gray-500 uppercase tracking-wide">Age</span>
+                          <p className="font-medium text-gray-900">{selectedPatient.age}</p>
+                        </div>
+                        <div>
+                          <span className="text-xs text-gray-500 uppercase tracking-wide">Gender</span>
+                          <p className="font-medium text-gray-900">{Array.isArray(selectedPatient.gender) ? selectedPatient.gender.join(', ') : selectedPatient.gender}</p>
+                        </div>
+                        <div>
+                          <span className="text-xs text-gray-500 uppercase tracking-wide">Country</span>
+                          <p className="font-medium text-gray-900">{selectedPatient.country}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Medical Information */}
+                    <div>
+                      <h4 className="font-semibold text-gray-900 mb-3">Medical Information</h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <span className="text-xs text-gray-500 uppercase tracking-wide">Condition</span>
+                          <p className="font-medium text-gray-900">{selectedPatient.condition}</p>
+                        </div>
+                        <div>
+                          <span className="text-xs text-gray-500 uppercase tracking-wide">ECOG Score</span>
+                          <p className="font-medium text-gray-900">{selectedPatient.ecog_score}</p>
+                        </div>
+                        <div>
+                          <span className="text-xs text-gray-500 uppercase tracking-wide">Histology</span>
+                          <p className="font-medium text-gray-900">{selectedPatient.histology}</p>
+                        </div>
+                        <div>
+                          <span className="text-xs text-gray-500 uppercase tracking-wide">Biomarker</span>
+                          <p className="font-medium text-gray-900">{selectedPatient.biomarker}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Treatment Information */}
+                    <div>
+                      <h4 className="font-semibold text-gray-900 mb-3">Treatment Information</h4>
+                      <div className="space-y-3">
+                        <div>
+                          <span className="text-xs text-gray-500 uppercase tracking-wide">Chemotherapy</span>
+                          <p className="font-medium text-gray-900">{Array.isArray(selectedPatient.chemotherapy) ? selectedPatient.chemotherapy.join(', ') : selectedPatient.chemotherapy}</p>
+                        </div>
+                        <div>
+                          <span className="text-xs text-gray-500 uppercase tracking-wide">Radiotherapy</span>
+                          <p className="font-medium text-gray-900">{Array.isArray(selectedPatient.radiotherapy) ? selectedPatient.radiotherapy.join(', ') : selectedPatient.radiotherapy}</p>
+                        </div>
+                        <div>
+                          <span className="text-xs text-gray-500 uppercase tracking-wide">Metastasis</span>
+                          <p className="font-medium text-gray-900">{Array.isArray(selectedPatient.metastasis) ? selectedPatient.metastasis.join(', ') : selectedPatient.metastasis}</p>
+                        </div>
+                        <div>
+                          <span className="text-xs text-gray-500 uppercase tracking-wide">Condition Recurrence</span>
+                          <p className="font-medium text-gray-900">{Array.isArray(selectedPatient.condition_recurrence) ? selectedPatient.condition_recurrence.join(', ') : selectedPatient.condition_recurrence}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Matching Status */}
+                    <div className="pt-4 border-t border-gray-100">
+                      <h4 className="font-semibold text-gray-900 mb-3">Matching Status</h4>
+                      <div className="flex items-center gap-4">
+                        <Badge className={`${getStatusColor(selectedPatient.status || '')} border font-medium px-3 py-1`}>
+                          {selectedPatient.status || 'Unknown'}
+                        </Badge>
+                        {selectedPatient.matched && (
+                          <div className="flex items-center gap-2 text-green-600">
+                            <Activity className="w-4 h-4" />
+                            <span className="text-sm font-medium">{selectedPatient.matched_trials_count || 0} trials matched</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
               ) : (
