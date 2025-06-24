@@ -1,48 +1,47 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Search, MapPin, Users, Calendar, ExternalLink, Globe, FileText } from "lucide-react"
-import { Trial } from '@/entities'
+import { useAppWriteData } from '@/hooks/useAppWriteData'
 import { Link } from 'react-router-dom'
 
-interface TrialData extends Trial {
-  id: string
+interface TrialDocument {
+  $id: string;
+  $createdAt: string;
+  $updatedAt: string;
+  trial_id: string;
+  title: string;
+  official_title?: string;
+  phase?: string;
+  condition: string;
+  status?: string;
+  location: string;
+  source_url?: string;
+  eligibility?: string;
+  matched_patients_count?: number;
 }
 
 const Trials = () => {
-  const [trials, setTrials] = useState<TrialData[]>([])
-  const [filteredTrials, setFilteredTrials] = useState<TrialData[]>([])
   const [searchTerm, setSearchTerm] = useState('')
-  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    const fetchTrials = async () => {
-      try {
-        const trialsData = await Trial.list()
-        setTrials(trialsData)
-        setFilteredTrials(trialsData)
-      } catch (error) {
-        console.error('Error fetching trials:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
+  const {
+    data: trials,
+    loading,
+    error,
+    fetchData
+  } = useAppWriteData<TrialDocument>({
+    collection: 'trial_info'
+  });
 
-    fetchTrials()
-  }, [])
-
-  useEffect(() => {
-    const filtered = trials.filter(trial =>
-      trial.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      trial.condition?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      trial.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      trial.official_title?.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-    setFilteredTrials(filtered)
-  }, [searchTerm, trials])
+  const filteredTrials = trials.filter(trial =>
+    trial.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    trial.condition?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    trial.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    trial.trial_id?.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
   const getPhaseColor = (phase: string) => {
     switch (phase) {
@@ -86,6 +85,38 @@ const Trials = () => {
     )
   }
 
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50">
+        <div className="gradient-bg-medical">
+          <header className="px-4 sm:px-6 py-6 sm:py-8">
+            <div className="flex items-center gap-4">
+              <SidebarTrigger className="text-white hover:bg-white/20" />
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-white">Clinical Trials</h1>
+                <p className="text-blue-100 text-base sm:text-lg">Error loading trial data</p>
+              </div>
+            </div>
+          </header>
+        </div>
+        <main className="p-4 sm:p-8 -mt-4 relative z-10">
+          <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm rounded-2xl">
+            <CardContent className="text-center py-12">
+              <h3 className="text-lg font-medium mb-2 text-red-600">Error Loading Data</h3>
+              <p className="text-gray-500 mb-4">{error}</p>
+              <button 
+                onClick={fetchData}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                Retry
+              </button>
+            </CardContent>
+          </Card>
+        </main>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50">
       <div className="gradient-bg-medical">
@@ -121,7 +152,7 @@ const Trials = () => {
 
           <div className="grid grid-cols-1 gap-4 sm:gap-6">
             {filteredTrials.map((trial, index) => (
-              <Card key={trial.id} className="card-hover border-0 shadow-lg bg-white/80 backdrop-blur-sm rounded-2xl overflow-hidden animate-slide-up" style={{animationDelay: `${index * 0.1}s`}}>
+              <Card key={trial.$id} className="card-hover border-0 shadow-lg bg-white/80 backdrop-blur-sm rounded-2xl overflow-hidden animate-slide-up" style={{animationDelay: `${index * 0.1}s`}}>
                 <CardHeader className="pb-4">
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
                     <div className="flex-1">
@@ -132,15 +163,19 @@ const Trials = () => {
                         <p className="text-sm text-gray-600 mb-3">{trial.official_title}</p>
                       )}
                       <div className="flex flex-wrap gap-2">
-                        <Badge className={`${getPhaseColor(trial.phase || '')} border font-medium px-3 py-1`}>
-                          {trial.phase}
-                        </Badge>
-                        <Badge className={`${getStatusColor(trial.status || '')} border font-medium px-3 py-1`}>
-                          {trial.status}
-                        </Badge>
+                        {trial.phase && (
+                          <Badge className={`${getPhaseColor(trial.phase)} border font-medium px-3 py-1`}>
+                            {trial.phase}
+                          </Badge>
+                        )}
+                        {trial.status && (
+                          <Badge className={`${getStatusColor(trial.status)} border font-medium px-3 py-1`}>
+                            {trial.status}
+                          </Badge>
+                        )}
                       </div>
                     </div>
-                    <Link to={`/trials/${trial.id}`}>
+                    <Link to={`/trials/${trial.$id}`}>
                       <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 rounded-xl px-4 sm:px-6 h-10 sm:h-11 shadow-lg w-full sm:w-auto">
                         <ExternalLink className="w-4 h-4 mr-2" />
                         View Details
