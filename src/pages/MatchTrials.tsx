@@ -90,8 +90,8 @@ const MatchTrials = () => {
 
     try {
       console.log('Calling match trials API for patient:', patientData.patient_id)
-      const matchResponse = await matchTrials({ patient_id: patientData.patient_id })
-      console.log('Match trials response:', matchResponse)
+      // const matchResponse = await matchTrials({ patient_id: patientData.patient_id })
+      // console.log('Match trials response:', matchResponse)
 
       
       const trialInfoResponse = await trialInfo({ patient_id: patientData.patient_id })
