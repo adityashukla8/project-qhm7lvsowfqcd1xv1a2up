@@ -15,49 +15,41 @@ Deno.serve(async (req) => {
 
     console.log(`Fetching trial info for patient: ${patient_id}`);
 
-    // Mock trial data for demonstration - replace with actual API call
-    const mockTrials = [
-      {
-        trial_id: "NCT05813126",
-        match_criteria: "match",
-        reason: "Eligible due to ECOG 0 and age >= 18",
-        match_requirements: "Biomarker: ALK positive",
-        title: "Trial of ALK inhibitor in Lung Cancer",
-        phase: "Phase 2",
-        condition: "Lung Cancer",
-        status: "Recruiting",
-        location: "USA",
-        eligibility: "Adults, ECOG 0-2",
-        source_url: "https://clinicaltrials.gov/show/NCT05813126"
-      },
-      {
-        trial_id: "NCT04567890",
-        match_criteria: "partial match",
-        reason: "Age criteria met but biomarker status unclear",
-        match_requirements: "Age >= 18, ECOG 0-1",
-        title: "Immunotherapy Trial for Advanced Cancer",
-        phase: "Phase 3",
-        condition: "Advanced Cancer",
-        status: "Active",
-        location: "Europe",
-        eligibility: "Adults 18+, ECOG 0-1",
-        source_url: "https://clinicaltrials.gov/show/NCT04567890"
-      }
-    ];
+    const apiUrl = "https://<your-cloud-run-url>/trial_info"; // Replace this
 
-    // Simulate API processing delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+        // Add auth header if required by backend
+      },
+      body: JSON.stringify({ patient_id })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Backend returned error: ${errorText}`);
+      return new Response(JSON.stringify({
+        success: false,
+        error: `Backend returned ${response.status}: ${response.statusText}`
+      }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
+    const result = await response.json();
 
     return new Response(JSON.stringify({
       success: true,
-      trials: mockTrials
+      trials: result.trials || []
     }), {
       status: 200,
       headers: { "Content-Type": "application/json" }
     });
 
   } catch (error) {
-    console.error("Error in trial_info function:", error);
+    console.error("❌ Error in trial_info function:", error);
     return new Response(JSON.stringify({
       success: false,
       error: error.message || "Internal server error"
