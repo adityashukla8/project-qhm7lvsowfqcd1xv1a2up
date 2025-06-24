@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
     };
 
     // Sync Patients from your specific collection
-    if (!collection || collection === 'patients') {
+    if (!collection || collection === 'patient_info_collection') {
       try {
         console.log(`Fetching patients from collection: ${patientCollectionId}`);
         
@@ -117,7 +117,7 @@ Deno.serve(async (req) => {
     }
 
     // Sync Trials (keeping existing logic but with better error handling)
-    if (!collection || collection === 'trials') {
+    if (!collection || collection === 'trial_info') {
       try {
         const trialsResult = await databases.listDocuments(
           databaseId,
@@ -175,7 +175,7 @@ Deno.serve(async (req) => {
     }
 
     // Sync Trial Matches (keeping existing logic but with better error handling)
-    if (!collection || collection === 'matches') {
+    if (!collection || collection === 'match_info') {
       try {
         const matchesResult = await databases.listDocuments(
           databaseId,
