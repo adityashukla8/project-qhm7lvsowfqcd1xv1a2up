@@ -50,17 +50,21 @@ const MatchTrials = () => {
 
     setIsFetchingPatient(true)
     try {
+      console.log('Fetching patient with ID:', patientId.trim())
       const response = await fetchPatients({ patientId: patientId.trim() })
+      console.log('API Response:', response)
       
       if (response.success && response.patient) {
+        console.log('Patient found:', response.patient)
         setPatientData(response.patient)
       } else {
-        alert('Patient not found')
+        console.error('Patient not found or API error:', response)
+        alert(`Patient not found: ${response.error || 'Unknown error'}`)
         setPatientData(null)
       }
     } catch (error) {
       console.error('Error fetching patient:', error)
-      alert('Error fetching patient data')
+      alert(`Error fetching patient data: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setIsFetchingPatient(false)
     }
@@ -148,7 +152,7 @@ const MatchTrials = () => {
                   <Label htmlFor="patientId" className="text-sm font-semibold text-gray-700">Patient ID</Label>
                   <Input 
                     id="patientId" 
-                    placeholder="Enter patient ID to search"
+                    placeholder="Enter patient ID to search (e.g., P001, P002, etc.)"
                     className="h-10 sm:h-12 border-0 bg-gray-50 rounded-xl"
                     value={patientId}
                     onChange={(e) => setPatientId(e.target.value)}
@@ -165,6 +169,11 @@ const MatchTrials = () => {
                   </Button>
                 </div>
               </div>
+              {!patientData && !isFetchingPatient && (
+                <div className="text-sm text-gray-600 bg-blue-50 px-4 py-3 rounded-lg">
+                  <strong>Tip:</strong> Try patient IDs like P001, P002, P003, etc. Make sure the patient exists in the external API.
+                </div>
+              )}
             </CardContent>
           </Card>
 

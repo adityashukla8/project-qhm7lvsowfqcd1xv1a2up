@@ -1,69 +1,71 @@
-import { createSuperdevClient } from 'npm:@superdevhq/client@0.1.51';
-
-const superdev = createSuperdevClient({ 
-  appId: Deno.env.get('SUPERDEV_APP_ID'), 
-});
-
-const BASE_URL = 'https://clinicaltrials-multiagent-502131642989.asia-south1.run.app';
-
 Deno.serve(async (req) => {
   try {
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response('Unauthorized', { status: 401 });
-    }
-    
-    const token = authHeader.split(' ')[1];
-    superdev.auth.setToken(token);
-
     const { patientId } = await req.json();
-
+    const baseUrl = "https://clinicaltrials-multiagent-502131642989.asia-south1.run.app";
+    
+    console.log('Fetching patient data...', { patientId });
+    
     if (patientId) {
       // Fetch specific patient by ID
-      const response = await fetch(`${BASE_URL}/patients/${patientId}`);
+      console.log(`Fetching patient with ID: ${patientId}`);
+      const response = await fetch(`${baseUrl}/patients/${patientId}`);
       
       if (!response.ok) {
-        throw new Error(`Failed to fetch patient: ${response.status} ${response.statusText}`);
+        console.error(`Failed to fetch patient ${patientId}: ${response.status} ${response.statusText}`);
+        return new Response(JSON.stringify({
+          success: false,
+          error: `Failed to fetch patient: ${response.status} ${response.statusText}`
+        }), {
+          status: 500,
+          headers: { "Content-Type": "application/json" }
+        });
       }
       
-      const patientData = await response.json();
+      const patient = await response.json();
+      console.log('Patient data received:', patient);
       
       return new Response(JSON.stringify({
         success: true,
-        patient: patientData
+        patient: patient
       }), {
         status: 200,
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" }
       });
     } else {
       // Fetch all patients
-      const response = await fetch(`${BASE_URL}/patients`);
+      console.log('Fetching all patients...');
+      const response = await fetch(`${baseUrl}/patients`);
       
       if (!response.ok) {
-        throw new Error(`Failed to fetch patients: ${response.status} ${response.statusText}`);
+        console.error(`Failed to fetch patients: ${response.status} ${response.statusText}`);
+        return new Response(JSON.stringify({
+          success: false,
+          error: `Failed to fetch patients: ${response.status} ${response.statusText}`
+        }), {
+          status: 500,
+          headers: { "Content-Type": "application/json" }
+        });
       }
       
-      const patientsData = await response.json();
+      const patients = await response.json();
+      console.log('Patients data received:', patients);
       
       return new Response(JSON.stringify({
         success: true,
-        patients: patientsData,
-        total: Array.isArray(patientsData) ? patientsData.length : 0
+        patients: Array.isArray(patients) ? patients : []
       }), {
         status: 200,
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" }
       });
     }
-
   } catch (error) {
-    console.error('Error fetching patients:', error);
-    
+    console.error('Error in fetch-patients function:', error);
     return new Response(JSON.stringify({
       success: false,
-      error: error.message || 'Internal server error'
+      error: error.message
     }), {
       status: 500,
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json" }
     });
   }
 });
