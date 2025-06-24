@@ -1,52 +1,47 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Users, Search, User, Activity } from "lucide-react"
-import { useAppWriteData } from '@/hooks/useAppWriteData'
+import { Patient } from '@/entities'
 
-interface PatientDocument {
-  $id: string;
-  $createdAt: string;
-  $updatedAt: string;
-  patient_id: string;
-  patient_name: string;
-  condition: string;
-  chemotherapy?: string[];
-  radiotherapy?: string[];
-  age: number;
-  gender?: string[];
-  country: string;
-  metastasis?: string[];
-  histology?: string;
-  biomarker?: string;
-  ecog_score?: number;
-  condition_recurrence?: string[];
-  status?: string;
-  matched?: boolean;
-  matched_trials_count?: number;
+interface PatientData extends Patient {
+  id: string
 }
 
 const PatientInfo = () => {
+  const [patients, setPatients] = useState<PatientData[]>([])
+  const [filteredPatients, setFilteredPatients] = useState<PatientData[]>([])
   const [searchTerm, setSearchTerm] = useState('')
-  const [selectedPatient, setSelectedPatient] = useState<PatientDocument | null>(null)
+  const [selectedPatient, setSelectedPatient] = useState<PatientData | null>(null)
+  const [loading, setLoading] = useState(true)
 
-  const {
-    data: patients,
-    loading,
-    error,
-    fetchData
-  } = useAppWriteData<PatientDocument>({
-    collection: 'patient_info_collection'
-  });
+  useEffect(() => {
+    const fetchPatients = async () => {
+      try {
+        const patientsData = await Patient.list()
+        setPatients(patientsData)
+        setFilteredPatients(patientsData)
+      } catch (error) {
+        console.error('Error fetching patients:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
 
-  const filteredPatients = patients.filter(patient =>
-    patient.patient_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    patient.patient_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    patient.condition?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    patient.country?.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+    fetchPatients()
+  }, [])
+
+  useEffect(() => {
+    const filtered = patients.filter(patient =>
+      patient.patient_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      patient.patient_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      patient.condition?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      patient.country?.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    setFilteredPatients(filtered)
+  }, [searchTerm, patients])
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -74,38 +69,6 @@ const PatientInfo = () => {
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600"></div>
           </div>
-        </main>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50">
-        <div className="gradient-bg-medical">
-          <header className="px-4 sm:px-6 py-6 sm:py-8">
-            <div className="flex items-center gap-4">
-              <SidebarTrigger className="text-white hover:bg-white/20" />
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-white">Patient Information</h1>
-                <p className="text-blue-100 text-base sm:text-lg">Error loading patient data</p>
-              </div>
-            </div>
-          </header>
-        </div>
-        <main className="p-4 sm:p-8 -mt-4 relative z-10">
-          <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm rounded-2xl">
-            <CardContent className="text-center py-12">
-              <h3 className="text-lg font-medium mb-2 text-red-600">Error Loading Data</h3>
-              <p className="text-gray-500 mb-4">{error}</p>
-              <button 
-                onClick={fetchData}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              >
-                Retry
-              </button>
-            </CardContent>
-          </Card>
         </main>
       </div>
     )
@@ -153,9 +116,9 @@ const PatientInfo = () => {
                 <div className="space-y-4">
                   {filteredPatients.map((patient, index) => (
                     <Card 
-                      key={patient.$id} 
+                      key={patient.id} 
                       className={`card-hover border-0 shadow-lg bg-white/80 backdrop-blur-sm rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 animate-slide-up ${
-                        selectedPatient?.$id === patient.$id ? 'ring-2 ring-blue-500' : ''
+                        selectedPatient?.id === patient.id ? 'ring-2 ring-blue-500' : ''
                       }`}
                       style={{animationDelay: `${index * 0.1}s`}}
                       onClick={() => setSelectedPatient(patient)}

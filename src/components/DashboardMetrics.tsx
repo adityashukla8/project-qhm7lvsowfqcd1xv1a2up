@@ -1,118 +1,250 @@
-import { MetricCard } from "./MetricCard"
-import { TrialsPhaseChart } from "./TrialsPhaseChart"
-import { Users, Activity, FileText, TrendingUp } from "lucide-react"
-import { useAppWriteData } from '@/hooks/useAppWriteData'
+import { useEffect, useState } from 'react'
+import { Users, Activity, FileText, Clock, Bot, Wrench, Target } from 'lucide-react'
+import { MetricCard } from './MetricCard'
+import { TrialsPhaseChart } from './TrialsPhaseChart'
+import { Patient } from '@/entities'
+import { Trial } from '@/entities'
+import { Summary } from '@/entities'
+import { ProcessingMetric } from '@/entities'
 
-interface PatientDocument {
-  $id: string;
-  status?: string;
-  matched?: boolean;
-}
-
-interface TrialDocument {
-  $id: string;
-  phase?: string;
-  status?: string;
-}
-
-interface MatchDocument {
-  $id: string;
-  patient_id: string;
-  trial_id: string;
+interface DashboardData {
+  totalPatients: number
+  matchedPatients: number
+  unmatchedPatients: number
+  matchRate: number
+  totalTrials: number
+  avgTrialsPerPatient: number
+  trialsPhaseData: Array<{ name: string; value: number; color: string }>
+  enrichedSummaries: number
+  avgResponseTime: number
+  agentCount: number
+  toolCount: number
 }
 
 export function DashboardMetrics() {
-  const { data: patients } = useAppWriteData<PatientDocument>({
-    collection: 'patient_info_collection'
-  });
+  const [data, setData] = useState<DashboardData>({
+    totalPatients: 0,
+    matchedPatients: 0,
+    unmatchedPatients: 0,
+    matchRate: 0,
+    totalTrials: 0,
+    avgTrialsPerPatient: 0,
+    trialsPhaseData: [],
+    enrichedSummaries: 0,
+    avgResponseTime: 0,
+    agentCount: 0,
+    toolCount: 0
+  })
 
-  const { data: trials } = useAppWriteData<TrialDocument>({
-    collection: 'trial_info'
-  });
+  const [loading, setLoading] = useState(true)
 
-  const { data: matches } = useAppWriteData<MatchDocument>({
-    collection: 'match_info'
-  });
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        // Fetch patients data
+        const patients = await Patient.list()
+        const totalPatients = patients.length
+        const matchedPatients = patients.filter(p => p.matched).length
+        const unmatchedPatients = totalPatients - matchedPatients
+        const matchRate = totalPatients > 0 ? (matchedPatients / totalPatients) * 100 : 0
 
-  // Calculate metrics
-  const totalPatients = patients.length;
-  const processedPatients = patients.filter(p => p.status === 'processed').length;
-  const matchedPatients = patients.filter(p => p.matched === true).length;
-  const totalTrials = trials.length;
-  const activeTrials = trials.filter(t => t.status === 'recruiting' || t.status === 'active').length;
-  const totalMatches = matches.length;
+        // Fetch trials data
+        const trials = await Trial.list()
+        const totalTrials = trials.length
+        
+        // Calculate average trials per patient
+        const totalMatches = patients.reduce((sum, p) => sum + (p.matched_trials_count || 0), 0)
+        const avgTrialsPerPatient = totalPatients > 0 ? totalMatches / totalPatients : 0
 
-  // Calculate phase distribution
-  const phaseData = [
-    { name: 'Phase 1', value: trials.filter(t => t.phase === 'Phase 1').length, color: '#3B82F6' },
-    { name: 'Phase 2', value: trials.filter(t => t.phase === 'Phase 2').length, color: '#10B981' },
-    { name: 'Phase 3', value: trials.filter(t => t.phase === 'Phase 3').length, color: '#F59E0B' },
-    { name: 'Phase 4', value: trials.filter(t => t.phase === 'Phase 4').length, color: '#EF4444' }
-  ].filter(phase => phase.value > 0);
+        // Calculate trials by phase
+        const phaseGroups = trials.reduce((acc, trial) => {
+          const phase = trial.phase || 'Unknown'
+          acc[phase] = (acc[phase] || 0) + 1
+          return acc
+        }, {} as Record<string, number>)
 
-  const matchingRate = totalPatients > 0 ? Math.round((matchedPatients / totalPatients) * 100) : 0;
+        const trialsPhaseData = Object.entries(phaseGroups).map(([name, value]) => ({
+          name,
+          value,
+          color: ''
+        }))
+
+        // Fetch summaries
+        const summaries = await Summary.list()
+        const enrichedSummaries = summaries.length
+
+        // Fetch processing metrics
+        const metrics = await ProcessingMetric.list()
+        const responseTimeMetrics = metrics.filter(m => m.metric_type === 'api_response_time')
+        const avgResponseTime = responseTimeMetrics.length > 0 
+          ? responseTimeMetrics.reduce((sum, m) => sum + m.value, 0) / responseTimeMetrics.length 
+          : 0
+
+        const agentMetrics = metrics.filter(m => m.metric_type === 'agent_count')
+        const agentCount = agentMetrics.length > 0 ? agentMetrics[agentMetrics.length - 1].value : 0
+
+        const toolMetrics = metrics.filter(m => m.metric_type === 'tool_count')
+        const toolCount = toolMetrics.length > 0 ? toolMetrics[toolMetrics.length - 1].value : 0
+
+        setData({
+          totalPatients,
+          matchedPatients,
+          unmatchedPatients,
+          matchRate,
+          totalTrials,
+          avgTrialsPerPatient,
+          trialsPhaseData,
+          enrichedSummaries,
+          avgResponseTime,
+          agentCount,
+          toolCount
+        })
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchDashboardData()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600"></div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6 sm:space-y-8">
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <MetricCard
-          title="Total Patients"
-          value={totalPatients}
-          subtitle={`${processedPatients} processed`}
-          icon={Users}
-          trend={{ value: 12, isPositive: true }}
-        />
-        
-        <MetricCard
-          title="Active Trials"
-          value={activeTrials}
-          subtitle={`${totalTrials} total trials`}
-          icon={Activity}
-          trend={{ value: 8, isPositive: true }}
-        />
-        
-        <MetricCard
-          title="Successful Matches"
-          value={totalMatches}
-          subtitle={`${matchedPatients} patients matched`}
-          icon={FileText}
-          trend={{ value: 15, isPositive: true }}
-        />
-        
-        <MetricCard
-          title="Matching Rate"
-          value={`${matchingRate}%`}
-          subtitle="Patient-trial compatibility"
-          icon={TrendingUp}
-          trend={{ value: 5, isPositive: true }}
-          className="bg-gradient-to-br from-blue-500 to-blue-600 text-white"
-        />
+      {/* Top Metrics in Blue Boxes */}
+      <div className="animate-slide-up">
+        <div className="mb-4 sm:mb-6">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Key Performance Indicators</h2>
+          <p className="text-gray-600 text-sm sm:text-base">Real-time system performance overview</p>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+          <MetricCard
+            title="Total Patients"
+            value={data.totalPatients}
+            icon={Users}
+            subtitle="Processed"
+            className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0"
+          />
+          <MetricCard
+            title="Match Rate"
+            value={`${data.matchRate.toFixed(1)}%`}
+            icon={Target}
+            subtitle="Success rate"
+            className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0"
+          />
+          <MetricCard
+            title="Active Trials"
+            value={data.totalTrials}
+            icon={FileText}
+            subtitle="Available"
+            className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0"
+          />
+          <MetricCard
+            title="Avg Response"
+            value={`${data.avgResponseTime.toFixed(0)}ms`}
+            icon={Clock}
+            subtitle="API performance"
+            className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0"
+          />
+        </div>
       </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
-        <TrialsPhaseChart data={phaseData} />
-        
-        {/* Additional chart placeholder */}
-        <div className="card-hover border-0 shadow-lg bg-white/80 backdrop-blur-sm rounded-2xl overflow-hidden">
-          <div className="p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                <span className="text-sm text-gray-700">New patients processed</span>
-                <span className="font-semibold text-blue-600">{processedPatients}</span>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                <span className="text-sm text-gray-700">Successful matches</span>
-                <span className="font-semibold text-green-600">{totalMatches}</span>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
-                <span className="text-sm text-gray-700">Active trials</span>
-                <span className="font-semibold text-purple-600">{activeTrials}</span>
-              </div>
-            </div>
-          </div>
+      {/* Patients Section */}
+      <div className="animate-slide-up">
+        <div className="mb-4 sm:mb-6">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Patient Analytics</h2>
+          <p className="text-gray-600 text-sm sm:text-base">Detailed patient matching performance</p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          <MetricCard
+            title="Total Patients"
+            value={data.totalPatients}
+            icon={Users}
+            subtitle="Processed patients"
+          />
+          <MetricCard
+            title="Matched Patients"
+            value={data.matchedPatients}
+            icon={Users}
+            subtitle="Successfully matched"
+          />
+          <MetricCard
+            title="Unmatched Patients"
+            value={data.unmatchedPatients}
+            icon={Users}
+            subtitle="No matches found"
+          />
+          <MetricCard
+            title="Match Rate"
+            value={`${data.matchRate.toFixed(1)}%`}
+            icon={Activity}
+            subtitle="Success rate"
+          />
+        </div>
+      </div>
+
+      {/* Trials Section */}
+      <div className="animate-slide-up" style={{animationDelay: '0.2s'}}>
+        <div className="mb-4 sm:mb-6">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Trial Insights</h2>
+          <p className="text-gray-600 text-sm sm:text-base">Clinical trial distribution and matching efficiency</p>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+          <MetricCard
+            title="Total Trials"
+            value={data.totalTrials}
+            icon={FileText}
+            subtitle="Available trials"
+          />
+          <MetricCard
+            title="Avg Trials per Patient"
+            value={data.avgTrialsPerPatient.toFixed(1)}
+            icon={Activity}
+            subtitle="Match efficiency"
+          />
+          <TrialsPhaseChart data={data.trialsPhaseData} />
+        </div>
+      </div>
+
+      {/* System Performance Section */}
+      <div className="animate-slide-up" style={{animationDelay: '0.4s'}}>
+        <div className="mb-4 sm:mb-6">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">System Performance</h2>
+          <p className="text-gray-600 text-sm sm:text-base">AI agents and processing capabilities</p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          <MetricCard
+            title="Enriched Summaries"
+            value={data.enrichedSummaries}
+            icon={FileText}
+            subtitle="Generated summaries"
+          />
+          <MetricCard
+            title="Avg Response Time"
+            value={`${data.avgResponseTime.toFixed(0)}ms`}
+            icon={Clock}
+            subtitle="API performance"
+          />
+          <MetricCard
+            title="Active Agents"
+            value={data.agentCount}
+            icon={Bot}
+            subtitle="Multi-agent system"
+          />
+          <MetricCard
+            title="Available Tools"
+            value={data.toolCount}
+            icon={Wrench}
+            subtitle="System capabilities"
+          />
         </div>
       </div>
     </div>
