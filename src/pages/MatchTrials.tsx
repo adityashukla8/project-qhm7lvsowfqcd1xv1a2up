@@ -116,11 +116,11 @@ const MatchTrials = () => {
         // } else {
         //   console.error('Trial info API error:', trialInfoResponse)
         //   setMatchingResults([])
-        }
-      } else {
-        console.error('Match trials API error:', matchResponse)
-        setMatchingResults([])
-      }
+      //   }
+      // } else {
+      //   console.error('Match trials API error:', matchResponse)
+      //   setMatchingResults([])
+      // }
       
       setHasSearched(true)
     } catch (error) {
