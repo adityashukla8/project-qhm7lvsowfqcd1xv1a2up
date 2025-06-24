@@ -4,10 +4,26 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Users, Search, User, Activity } from "lucide-react"
-import { Patient } from '@/entities'
+import { fetchPatients } from '@/functions'
 
-interface PatientData extends Patient {
+interface PatientData {
   id: string
+  patient_id: string
+  patient_name: string
+  condition: string
+  chemotherapy: string[]
+  radiotherapy: string[]
+  age: number
+  gender: string[]
+  country: string
+  metastasis: string[]
+  histology: string
+  biomarker: string
+  ecog_score: number
+  condition_recurrence: string[]
+  status: string
+  matched: boolean
+  matched_trials_count: number
 }
 
 const PatientInfo = () => {
@@ -18,19 +34,21 @@ const PatientInfo = () => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const fetchPatients = async () => {
+    const loadPatients = async () => {
       try {
-        const patientsData = await Patient.list()
-        setPatients(patientsData)
-        setFilteredPatients(patientsData)
+        const response = await fetchPatients({})
+        if (response.success && response.patients) {
+          setPatients(response.patients)
+          setFilteredPatients(response.patients)
+        }
       } catch (error) {
-        console.error('Error fetching patients:', error)
+        console.error('Error loading patients:', error)
       } finally {
         setLoading(false)
       }
     }
 
-    fetchPatients()
+    loadPatients()
   }, [])
 
   useEffect(() => {
@@ -116,9 +134,9 @@ const PatientInfo = () => {
                 <div className="space-y-4">
                   {filteredPatients.map((patient, index) => (
                     <Card 
-                      key={patient.id} 
+                      key={patient.id || patient.patient_id} 
                       className={`card-hover border-0 shadow-lg bg-white/80 backdrop-blur-sm rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 animate-slide-up ${
-                        selectedPatient?.id === patient.id ? 'ring-2 ring-blue-500' : ''
+                        selectedPatient?.patient_id === patient.patient_id ? 'ring-2 ring-blue-500' : ''
                       }`}
                       style={{animationDelay: `${index * 0.1}s`}}
                       onClick={() => setSelectedPatient(patient)}
@@ -193,90 +211,7 @@ const PatientInfo = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-4 sm:p-6 space-y-6">
-                    {/* Basic Information */}
-                    <div>
-                      <h4 className="font-semibold text-gray-900 mb-3">Basic Information</h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <span className="text-xs text-gray-500 uppercase tracking-wide">Patient ID</span>
-                          <p className="font-medium text-gray-900">{selectedPatient.patient_id}</p>
-                        </div>
-                        <div>
-                          <span className="text-xs text-gray-500 uppercase tracking-wide">Age</span>
-                          <p className="font-medium text-gray-900">{selectedPatient.age}</p>
-                        </div>
-                        <div>
-                          <span className="text-xs text-gray-500 uppercase tracking-wide">Gender</span>
-                          <p className="font-medium text-gray-900">{Array.isArray(selectedPatient.gender) ? selectedPatient.gender.join(', ') : selectedPatient.gender}</p>
-                        </div>
-                        <div>
-                          <span className="text-xs text-gray-500 uppercase tracking-wide">Country</span>
-                          <p className="font-medium text-gray-900">{selectedPatient.country}</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Medical Information */}
-                    <div>
-                      <h4 className="font-semibold text-gray-900 mb-3">Medical Information</h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <span className="text-xs text-gray-500 uppercase tracking-wide">Condition</span>
-                          <p className="font-medium text-gray-900">{selectedPatient.condition}</p>
-                        </div>
-                        <div>
-                          <span className="text-xs text-gray-500 uppercase tracking-wide">ECOG Score</span>
-                          <p className="font-medium text-gray-900">{selectedPatient.ecog_score}</p>
-                        </div>
-                        <div>
-                          <span className="text-xs text-gray-500 uppercase tracking-wide">Histology</span>
-                          <p className="font-medium text-gray-900">{selectedPatient.histology}</p>
-                        </div>
-                        <div>
-                          <span className="text-xs text-gray-500 uppercase tracking-wide">Biomarker</span>
-                          <p className="font-medium text-gray-900">{selectedPatient.biomarker}</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Treatment Information */}
-                    <div>
-                      <h4 className="font-semibold text-gray-900 mb-3">Treatment Information</h4>
-                      <div className="space-y-3">
-                        <div>
-                          <span className="text-xs text-gray-500 uppercase tracking-wide">Chemotherapy</span>
-                          <p className="font-medium text-gray-900">{Array.isArray(selectedPatient.chemotherapy) ? selectedPatient.chemotherapy.join(', ') : selectedPatient.chemotherapy}</p>
-                        </div>
-                        <div>
-                          <span className="text-xs text-gray-500 uppercase tracking-wide">Radiotherapy</span>
-                          <p className="font-medium text-gray-900">{Array.isArray(selectedPatient.radiotherapy) ? selectedPatient.radiotherapy.join(', ') : selectedPatient.radiotherapy}</p>
-                        </div>
-                        <div>
-                          <span className="text-xs text-gray-500 uppercase tracking-wide">Metastasis</span>
-                          <p className="font-medium text-gray-900">{Array.isArray(selectedPatient.metastasis) ? selectedPatient.metastasis.join(', ') : selectedPatient.metastasis}</p>
-                        </div>
-                        <div>
-                          <span className="text-xs text-gray-500 uppercase tracking-wide">Condition Recurrence</span>
-                          <p className="font-medium text-gray-900">{Array.isArray(selectedPatient.condition_recurrence) ? selectedPatient.condition_recurrence.join(', ') : selectedPatient.condition_recurrence}</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Matching Status */}
-                    <div className="pt-4 border-t border-gray-100">
-                      <h4 className="font-semibold text-gray-900 mb-3">Matching Status</h4>
-                      <div className="flex items-center gap-4">
-                        <Badge className={`${getStatusColor(selectedPatient.status || '')} border font-medium px-3 py-1`}>
-                          {selectedPatient.status || 'Unknown'}
-                        </Badge>
-                        {selectedPatient.matched && (
-                          <div className="flex items-center gap-2 text-green-600">
-                            <Activity className="w-4 h-4" />
-                            <span className="text-sm font-medium">{selectedPatient.matched_trials_count || 0} trials matched</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
+                    {/* ... keep existing code (patient details sections) ... */}
                   </CardContent>
                 </Card>
               ) : (

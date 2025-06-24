@@ -6,15 +6,32 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Search, MapPin, Users, ExternalLink, Calendar, User, Activity } from "lucide-react"
-import { Trial, Patient } from '@/entities'
+import { Trial } from '@/entities'
 import { Link } from 'react-router-dom'
+import { fetchPatients } from '@/functions'
 
 interface TrialData extends Trial {
   id: string
 }
 
-interface PatientData extends Patient {
+interface PatientData {
   id: string
+  patient_id: string
+  patient_name: string
+  condition: string
+  chemotherapy: string[]
+  radiotherapy: string[]
+  age: number
+  gender: string[]
+  country: string
+  metastasis: string[]
+  histology: string
+  biomarker: string
+  ecog_score: number
+  condition_recurrence: string[]
+  status: string
+  matched: boolean
+  matched_trials_count: number
 }
 
 const MatchTrials = () => {
@@ -33,11 +50,10 @@ const MatchTrials = () => {
 
     setIsFetchingPatient(true)
     try {
-      const allPatients = await Patient.list()
-      const patient = allPatients.find(p => p.patient_id === patientId.trim())
+      const response = await fetchPatients({ patientId: patientId.trim() })
       
-      if (patient) {
-        setPatientData(patient)
+      if (response.success && response.patient) {
+        setPatientData(response.patient)
       } else {
         alert('Patient not found')
         setPatientData(null)
@@ -252,10 +268,10 @@ const MatchTrials = () => {
                           <div className="flex-1">
                             <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-3">{trial.title}</h3>
                             <div className="flex flex-wrap gap-2">
-                              <Badge className={`${getPhaseColor(trial.phase || '')} border font-medium px-3 py-1`}>
+                              <Badge className={`${getPhaseColor(trial.phase || '')} border font-medium px-3 py-1`}> 
                                 {trial.phase}
                               </Badge>
-                              <Badge className={`${getStatusColor(trial.status || '')} border font-medium px-3 py-1`}>
+                              <Badge className={`${getStatusColor(trial.status || '')} border font-medium px-3 py-1`}> 
                                 {trial.status}
                               </Badge>
                             </div>
