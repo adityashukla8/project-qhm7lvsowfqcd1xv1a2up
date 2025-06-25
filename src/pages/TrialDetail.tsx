@@ -46,12 +46,11 @@ const TrialDetail = () => {
 
       try {
         const response = await fetchTrials()
-        if (response.success) {
-          const trials = response?.data?.trials ?? []
-          const foundTrial = trials.find((t: TrialData) => t.trial_id === id)
+        if (response?.success && Array.isArray(response?.data?.trials)) {
+          const foundTrial = response.data.trials.find((t: TrialData) => t.trial_id === id)
           setTrial(foundTrial || null)
         } else {
-          console.error('Error fetching trials:', response.error)
+          console.error('Invalid trial data format or error:', response?.error)
         }
       } catch (error) {
         console.error('Error fetching trial data:', error)
