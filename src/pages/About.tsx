@@ -10,8 +10,8 @@ const About = () => {
           <div className="flex items-center gap-4">
             <SidebarTrigger className="text-white hover:bg-white/20" />
             <div>
-              <h1 className="text-2xl font-bold text-white">About Criteria-AI</h1>
-              <p className="text-blue-100">AI-Driven Clinical Trials Matching System</p>
+              <h1 className="text-2xl font-bold text-white">About ClinicalMatch</h1>
+              <p className="text-blue-100">Advanced Clinical Trial Matching Platform</p>
             </div>
           </div>
         </header>
@@ -28,7 +28,7 @@ const About = () => {
             </CardHeader>
             <CardContent>
               <p className="text-gray-700 leading-relaxed">
-                Criteria-AI is an advanced AI-powered platform designed to revolutionize the way patients 
+                ClinicalMatch is an advanced AI-powered platform designed to revolutionize the way patients 
                 are matched with clinical trials. Using multi-agent systems and sophisticated algorithms, 
                 we provide healthcare professionals with the tools they need to find the most suitable 
                 clinical trials for their patients.

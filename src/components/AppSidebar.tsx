@@ -1,25 +1,28 @@
-import { Home, Search, FileText, Users, Info, Activity } from "lucide-react"
-import { Link, useLocation } from "react-router-dom"
-
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarHeader,
-  SidebarFooter,
 } from "@/components/ui/sidebar"
+import { Home, Users, Search, FileText, Settings, Activity } from "lucide-react"
+import { Link, useLocation } from "react-router-dom"
 
-// Menu items without Protocol Optimization
 const items = [
   {
     title: "Dashboard",
     url: "/",
     icon: Home,
+  },
+  {
+    title: "Patient Info",
+    url: "/patient-info",
+    icon: Users,
   },
   {
     title: "Match Trials",
@@ -32,14 +35,14 @@ const items = [
     icon: FileText,
   },
   {
-    title: "Patient Info",
-    url: "/patient-info",
-    icon: Users,
+    title: "Protocol Optimization",
+    url: "/protocol-optimization",
+    icon: Activity,
   },
   {
     title: "About",
     url: "/about",
-    icon: Info,
+    icon: Settings,
   },
 ]
 
@@ -48,14 +51,12 @@ export function AppSidebar() {
 
   return (
     <Sidebar>
-      <SidebarHeader className="border-b border-sidebar-border p-4">
-        <div className="flex items-center gap-3">
+      <SidebarHeader className="p-4">
+        <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg flex items-center justify-center">
             <Activity className="w-4 h-4 text-white" />
           </div>
-          <div>
-            <h2 className="text-lg font-bold text-sidebar-foreground">Criteria-AI</h2>
-          </div>
+          <span className="font-bold text-lg">Clinical Trials</span>
         </div>
       </SidebarHeader>
       <SidebarContent>
@@ -77,8 +78,10 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="p-4 border-t border-sidebar-border">
-        <p className="text-xs text-sidebar-foreground/70 text-center">AI-Driven Clinical Trials Matching System</p>
+      <SidebarFooter className="p-4">
+        <div className="text-xs text-gray-500">
+          Clinical Trials Management System
+        </div>
       </SidebarFooter>
     </Sidebar>
   )
