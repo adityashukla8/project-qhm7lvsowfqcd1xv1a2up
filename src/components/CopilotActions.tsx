@@ -15,7 +15,7 @@ export const useCopilotPatientActions = () => {
     ],
     handler: async ({ patientId }) => {
       try {
-        console.log('Searching for patient:', patientId);
+        console.log('CopilotKit: Searching for patient:', patientId);
         const response = await fetchPatients({ patientId: patientId.trim() });
         
         if (response.success && response.patient) {
@@ -47,7 +47,7 @@ export const useCopilotPatientActions = () => {
           return `❌ Patient with ID "${patientId}" not found. Please check the patient ID and try again.`;
         }
       } catch (error) {
-        console.error('Error searching patient:', error);
+        console.error('CopilotKit: Error searching patient:', error);
         return `❌ Error searching for patient: ${error instanceof Error ? error.message : 'Unknown error'}`;
       }
     },
@@ -59,6 +59,7 @@ export const useCopilotPatientActions = () => {
     parameters: [],
     handler: async () => {
       try {
+        console.log('CopilotKit: Getting patient statistics');
         const response = await fetchPatients({});
         
         if (response.success && response.patients) {
@@ -94,7 +95,7 @@ ${topConditions}
           return `❌ Unable to retrieve patient statistics.`;
         }
       } catch (error) {
-        console.error('Error getting patient stats:', error);
+        console.error('CopilotKit: Error getting patient stats:', error);
         return `❌ Error retrieving patient statistics: ${error instanceof Error ? error.message : 'Unknown error'}`;
       }
     },
@@ -115,7 +116,7 @@ export const useCopilotTrialActions = () => {
     ],
     handler: async ({ trialId }) => {
       try {
-        console.log('Searching for trial:', trialId);
+        console.log('CopilotKit: Searching for trial:', trialId);
         const response = await trialInfo({ trial_id: trialId.trim() });
         
         if (response.success && response.trial_info) {
@@ -153,7 +154,7 @@ ${trial.eligibility ? trial.eligibility.substring(0, 500) + (trial.eligibility.l
           return `❌ Trial with ID "${trialId}" not found. Please check the trial ID and try again.`;
         }
       } catch (error) {
-        console.error('Error searching trial:', error);
+        console.error('CopilotKit: Error searching trial:', error);
         return `❌ Error searching for trial: ${error instanceof Error ? error.message : 'Unknown error'}`;
       }
     },
@@ -165,6 +166,7 @@ ${trial.eligibility ? trial.eligibility.substring(0, 500) + (trial.eligibility.l
     parameters: [],
     handler: async () => {
       try {
+        console.log('CopilotKit: Getting trial statistics');
         const response = await fetchTrials();
         
         if (response.success && response.data?.trials) {
@@ -205,7 +207,7 @@ ${phaseBreakdown}
           return `❌ Unable to retrieve trial statistics.`;
         }
       } catch (error) {
-        console.error('Error getting trial stats:', error);
+        console.error('CopilotKit: Error getting trial stats:', error);
         return `❌ Error retrieving trial statistics: ${error instanceof Error ? error.message : 'Unknown error'}`;
       }
     },

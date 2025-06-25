@@ -2,8 +2,6 @@ import { CopilotRuntime, GoogleGenerativeAIAdapter } from "npm:@copilotkit/runti
 
 Deno.serve(async (req) => {
   try {
-    console.log("CopilotKit function called");
-    
     const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
     
     if (!geminiApiKey) {
@@ -17,19 +15,18 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log("Creating Gemini adapter");
+    console.log("Initializing CopilotKit runtime with Gemini");
+
     const serviceAdapter = new GoogleGenerativeAIAdapter({
       apiKey: geminiApiKey,
       model: "gemini-1.5-flash",
     });
 
-    console.log("Creating CopilotRuntime");
     const runtime = new CopilotRuntime();
 
-    console.log("Processing request with runtime");
     const response = await runtime.streamHttpServerResponse(req, serviceAdapter);
+    console.log("CopilotKit runtime response generated");
     
-    console.log("Runtime response created");
     return response;
   } catch (error) {
     console.error("CopilotKit runtime error:", error);
