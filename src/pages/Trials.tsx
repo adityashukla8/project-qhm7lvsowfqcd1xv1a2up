@@ -53,7 +53,7 @@ const Trials = () => {
         
         if (response && response.success) {
           // Ensure data is an array
-          const trialsData = Array.isArray(response.data) ? response.data : []
+          const trialsData = Array.isArray(response?.data?.trials) ? response.data.trials : []
           console.log('Setting trials data:', trialsData)
           setTrials(trialsData)
           setFilteredTrials(trialsData)
