@@ -5,15 +5,17 @@ import { Activity, Users, Bot, Zap } from "lucide-react"
 const About = () => {
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center gap-4">
-          <SidebarTrigger />
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">About ClinicalMatch</h1>
-            <p className="text-gray-600">Advanced Clinical Trial Matching Platform</p>
+      <div className="bg-blue-600">
+        <header className="px-6 py-4">
+          <div className="flex items-center gap-4">
+            <SidebarTrigger className="text-white hover:bg-white/20" />
+            <div>
+              <h1 className="text-2xl font-bold text-white">About ClinicalMatch</h1>
+              <p className="text-blue-100">Advanced Clinical Trial Matching Platform</p>
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
+      </div>
       
       <main className="p-6 max-w-4xl mx-auto">
         <div className="space-y-6">

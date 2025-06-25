@@ -152,15 +152,17 @@ const TrialDetail = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <header className="bg-white border-b border-gray-200 px-6 py-4">
-          <div className="flex items-center gap-4">
-            <SidebarTrigger />
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Trial Details</h1>
-              <p className="text-gray-600">Loading trial information...</p>
+        <div className="bg-blue-600">
+          <header className="px-6 py-4">
+            <div className="flex items-center gap-4">
+              <SidebarTrigger className="text-white hover:bg-white/20" />
+              <div>
+                <h1 className="text-2xl font-bold text-white">Trial Details</h1>
+                <p className="text-blue-100">Loading trial information...</p>
+              </div>
             </div>
-          </div>
-        </header>
+          </header>
+        </div>
         <main className="p-6">
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -173,15 +175,17 @@ const TrialDetail = () => {
   if (!trial) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <header className="bg-white border-b border-gray-200 px-6 py-4">
-          <div className="flex items-center gap-4">
-            <SidebarTrigger />
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Trial Not Found</h1>
-              <p className="text-gray-600">The requested trial could not be found</p>
+        <div className="bg-blue-600">
+          <header className="px-6 py-4">
+            <div className="flex items-center gap-4">
+              <SidebarTrigger className="text-white hover:bg-white/20" />
+              <div>
+                <h1 className="text-2xl font-bold text-white">Trial Not Found</h1>
+                <p className="text-blue-100">The requested trial could not be found</p>
+              </div>
             </div>
-          </div>
-        </header>
+          </header>
+        </div>
         <main className="p-6">
           <Card>
             <CardContent className="text-center py-12">
@@ -206,23 +210,25 @@ const TrialDetail = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center gap-4">
-          <SidebarTrigger />
-          <div className="flex-1">
-            <div className="flex items-center gap-4 mb-2">
-              <Link to="/trials">
-                <Button variant="outline" size="sm">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back to Trials
-                </Button>
-              </Link>
+      <div className="bg-blue-600">
+        <header className="px-6 py-4">
+          <div className="flex items-center gap-4">
+            <SidebarTrigger className="text-white hover:bg-white/20" />
+            <div className="flex-1">
+              <div className="flex items-center gap-4 mb-2">
+                <Link to="/trials">
+                  <Button variant="outline" size="sm" className="bg-white/10 border-white/20 text-white hover:bg-white/20">
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Back to Trials
+                  </Button>
+                </Link>
+              </div>
+              <h1 className="text-2xl font-bold text-white">{trial.title || 'Untitled Trial'}</h1>
+              <p className="text-blue-100">Trial ID: {trial.trial_id}</p>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900">{trial.title || 'Untitled Trial'}</h1>
-            <p className="text-gray-600">Trial ID: {trial.trial_id}</p>
           </div>
-        </div>
-      </header>
+        </header>
+      </div>
       
       <main className="p-6 max-w-6xl mx-auto">
         <div className="space-y-6">
