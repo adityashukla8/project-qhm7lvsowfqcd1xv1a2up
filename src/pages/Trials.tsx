@@ -41,19 +41,35 @@ const Trials = () => {
   const [filteredTrials, setFilteredTrials] = useState<TrialData[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const loadTrials = async () => {
       try {
+        setError(null)
+        console.log('Starting to fetch trials...')
         const response = await fetchTrials()
-        if (response.success) {
-          setTrials(response.data)
-          setFilteredTrials(response.data)
+        console.log('Fetch trials response:', response)
+        
+        if (response && response.success) {
+          // Ensure data is an array
+          const trialsData = Array.isArray(response.data) ? response.data : []
+          console.log('Setting trials data:', trialsData)
+          setTrials(trialsData)
+          setFilteredTrials(trialsData)
         } else {
-          console.error('Error fetching trials:', response.error)
+          console.error('Error fetching trials:', response?.error || 'Unknown error')
+          setError(response?.error || 'Failed to fetch trials')
+          // Set empty arrays as fallback
+          setTrials([])
+          setFilteredTrials([])
         }
       } catch (error) {
         console.error('Error fetching trials:', error)
+        setError(error instanceof Error ? error.message : 'An unexpected error occurred')
+        // Set empty arrays as fallback
+        setTrials([])
+        setFilteredTrials([])
       } finally {
         setLoading(false)
       }
@@ -63,13 +79,18 @@ const Trials = () => {
   }, [])
 
   useEffect(() => {
-    const filtered = trials.filter(trial =>
-      trial.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      trial.official_title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      trial.sites?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      trial.location_and_site_details?.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-    setFilteredTrials(filtered)
+    // Ensure trials is always an array before filtering
+    if (Array.isArray(trials)) {
+      const filtered = trials.filter(trial =>
+        trial.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        trial.official_title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        trial.sites?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        trial.location_and_site_details?.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      setFilteredTrials(filtered)
+    } else {
+      setFilteredTrials([])
+    }
   }, [searchTerm, trials])
 
   // Helper function to extract phase from title or other fields
@@ -133,6 +154,41 @@ const Trials = () => {
     )
   }
 
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50">
+        <div className="gradient-bg-medical">
+          <header className="px-4 sm:px-6 py-6 sm:py-8">
+            <div className="flex items-center gap-4">
+              <SidebarTrigger className="text-white hover:bg-white/20" />
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-white">Clinical Trials</h1>
+                <p className="text-blue-100 text-base sm:text-lg">Browse available clinical trials</p>
+              </div>
+            </div>
+          </header>
+        </div>
+        <main className="p-4 sm:p-8 -mt-4 relative z-10">
+          <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm rounded-2xl">
+            <CardContent className="text-center py-16">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <ExternalLink className="w-8 h-8 text-red-400" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2 text-gray-900">Error Loading Trials</h3>
+              <p className="text-gray-500 mb-4">{error}</p>
+              <Button 
+                onClick={() => window.location.reload()} 
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                Retry
+              </Button>
+            </CardContent>
+          </Card>
+        </main>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50">
       <div className="gradient-bg-medical">
@@ -161,13 +217,13 @@ const Trials = () => {
                 />
               </div>
               <div className="text-sm text-gray-600 bg-gray-100 px-4 py-2 rounded-lg">
-                {filteredTrials.length} of {trials.length} trials
+                {Array.isArray(filteredTrials) ? filteredTrials.length : 0} of {Array.isArray(trials) ? trials.length : 0} trials
               </div>
             </div>
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:gap-6">
-            {filteredTrials.map((trial, index) => {
+            {Array.isArray(filteredTrials) && filteredTrials.map((trial, index) => {
               const phase = extractPhase(trial)
               const status = extractStatus(trial)
               
@@ -200,6 +256,7 @@ const Trials = () => {
                     </div>
                   </CardHeader>
                   <CardContent>
+                    {/* ... keep existing code (trial details display) ... */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                       {trial.objective_summary && (
                         <div className="flex items-center gap-3 text-gray-600">
@@ -281,7 +338,7 @@ const Trials = () => {
             })}
           </div>
 
-          {filteredTrials.length === 0 && (
+          {Array.isArray(filteredTrials) && filteredTrials.length === 0 && (
             <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm rounded-2xl">
               <CardContent className="text-center py-16">
                 <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
