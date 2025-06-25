@@ -109,18 +109,27 @@ const TrialDetail = () => {
   
     const visibleCitations = showAll ? citationList : citationList.slice(0, 20)
   
+    const extractDomain = (url: string) => {
+      try {
+        const domain = new URL(url).hostname
+        return domain.replace(/^www\./, '')
+      } catch {
+        return url // fallback for malformed URL
+      }
+    }
+  
     return (
       <div className="space-y-2">
-        <div className="flex flex-wrap">
+        <div className="flex flex-wrap gap-2">
           {visibleCitations.map((citation, index) => (
             <a
               key={index}
               href={citation}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs mr-2 mb-1 hover:underline"
+              className="inline-block bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs hover:underline"
             >
-              {citation}
+              {extractDomain(citation)}
             </a>
           ))}
         </div>
@@ -138,7 +147,6 @@ const TrialDetail = () => {
       </div>
     )
   }
-
 
 
   if (loading) {
