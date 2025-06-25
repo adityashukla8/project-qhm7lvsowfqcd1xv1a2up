@@ -5,9 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
-import { CopilotProvider } from "@/components/CopilotProvider";
 import usePageTitle from "@/hooks/usePageTitle";
-import { useCopilotActions } from "@/hooks/useCopilotActions";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import MatchTrials from "./pages/MatchTrials";
@@ -20,7 +18,6 @@ const queryClient = new QueryClient();
 
 const AppContent = () => {
   usePageTitle();
-  useCopilotActions();
   
   return (
     <SidebarProvider>
@@ -49,9 +46,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <CopilotProvider>
-          <AppContent />
-        </CopilotProvider>
+        <AppContent />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
