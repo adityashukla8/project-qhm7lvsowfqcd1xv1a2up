@@ -25,7 +25,7 @@ export function ToolsModal({ open, onOpenChange }: ToolsModalProps) {
                 <TestTube className="h-6 w-6 text-orange-600" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">🧪 ClinicalTrials.gov Look-Up</h3>
+                <h3 className="text-lg font-semibold text-gray-900">ClinicalTrials.gov Look-Up</h3>
                 <Badge variant="secondary" className="mt-1">Registry Tool</Badge>
               </div>
             </div>
@@ -41,7 +41,7 @@ export function ToolsModal({ open, onOpenChange }: ToolsModalProps) {
                 <Brain className="h-6 w-6 text-blue-600" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">🧠 Gemini API (LLM)</h3>
+                <h3 className="text-lg font-semibold text-gray-900">Gemini API (LLM)</h3>
                 <Badge variant="secondary" className="mt-1">AI Tool</Badge>
               </div>
             </div>
@@ -57,7 +57,7 @@ export function ToolsModal({ open, onOpenChange }: ToolsModalProps) {
                 <Globe className="h-6 w-6 text-green-600" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">🔍 Tavily Web Search API</h3>
+                <h3 className="text-lg font-semibold text-gray-900">Tavily Web Search API</h3>
                 <Badge variant="secondary" className="mt-1">Search Tool</Badge>
               </div>
             </div>
@@ -74,7 +74,7 @@ export function ToolsModal({ open, onOpenChange }: ToolsModalProps) {
                 <Database className="h-6 w-6 text-purple-600" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">📊 AppWrite Database</h3>
+                <h3 className="text-lg font-semibold text-gray-900">AppWrite Database</h3>
                 <Badge variant="secondary" className="mt-1">Storage Tool</Badge>
               </div>
             </div>
