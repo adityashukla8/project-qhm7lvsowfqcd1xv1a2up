@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Users, Activity, FileText, Target, TrendingUp, Search } from 'lucide-react'
+import { Users, Activity, FileText, Target, TrendingUp, Search, Bot, Wrench } from 'lucide-react'
 import { MetricCard } from './MetricCard'
+import { AgentModal } from './AgentModal'
+import { ToolsModal } from './ToolsModal'
 import { fetchMetrics } from '@/functions'
 
 interface MetricsData {
@@ -19,6 +21,8 @@ interface MetricsData {
 export function MetricsOverview() {
   const [data, setData] = useState<MetricsData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [agentModalOpen, setAgentModalOpen] = useState(false)
+  const [toolsModalOpen, setToolsModalOpen] = useState(false)
 
   useEffect(() => {
     const fetchDashboardMetrics = async () => {
@@ -116,6 +120,47 @@ export function MetricsOverview() {
         </div>
       </div>
 
+      {/* System Metrics */}
+      <div className="animate-slide-up" style={{animationDelay: '0.15s'}}>
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">System Metrics</h2>
+          <p className="text-gray-600">AI agents and tools powering the platform</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div 
+            className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-1 cursor-pointer"
+            onClick={() => setAgentModalOpen(true)}
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-blue-50 rounded-lg">
+                <Bot className="h-5 w-5 text-blue-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-gray-900 text-sm">Active Agents</h3>
+                <p className="text-xs text-gray-600">Click to view details</p>
+              </div>
+            </div>
+            <div className="text-2xl font-bold text-gray-900">2</div>
+          </div>
+          
+          <div 
+            className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-1 cursor-pointer"
+            onClick={() => setToolsModalOpen(true)}
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-green-50 rounded-lg">
+                <Wrench className="h-5 w-5 text-green-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-gray-900 text-sm">Available Tools</h3>
+                <p className="text-xs text-gray-600">Click to view details</p>
+              </div>
+            </div>
+            <div className="text-2xl font-bold text-gray-900">4</div>
+          </div>
+        </div>
+      </div>
+
       {/* Matching Performance */}
       <div className="animate-slide-up" style={{animationDelay: '0.2s'}}>
         <div className="mb-6">
@@ -162,6 +207,10 @@ export function MetricsOverview() {
           </div>
         </div>
       </div>
+
+      {/* Modals */}
+      <AgentModal open={agentModalOpen} onOpenChange={setAgentModalOpen} />
+      <ToolsModal open={toolsModalOpen} onOpenChange={setToolsModalOpen} />
     </div>
   )
 }
