@@ -1,12 +1,12 @@
-import { CopilotRuntime, OpenAIAdapter } from "npm:@copilotkit/runtime@1.9.1";
+import { CopilotRuntime, GoogleGenerativeAIAdapter } from "npm:@copilotkit/runtime@1.9.1";
 
 Deno.serve(async (req) => {
   try {
-    const copilotApiKey = Deno.env.get("COPILOTKIT_API");
+    const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
     
-    if (!copilotApiKey) {
+    if (!geminiApiKey) {
       return new Response(
-        JSON.stringify({ error: "CopilotKit API key not configured" }),
+        JSON.stringify({ error: "Gemini API key not configured" }),
         { 
           status: 500, 
           headers: { "Content-Type": "application/json" } 
@@ -14,9 +14,9 @@ Deno.serve(async (req) => {
       );
     }
 
-    const serviceAdapter = new OpenAIAdapter({
-      apiKey: copilotApiKey,
-      model: "gpt-4o-mini",
+    const serviceAdapter = new GoogleGenerativeAIAdapter({
+      apiKey: geminiApiKey,
+      model: "gemini-1.5-flash",
     });
 
     const runtime = new CopilotRuntime();
