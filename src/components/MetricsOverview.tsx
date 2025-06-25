@@ -111,7 +111,7 @@ export function MetricsOverview() {
             title="Avg Tavily Citations per Trial"
             value={data.avg_tavily_citations_per_trial.toFixed(1)}
             icon={FileText}
-            subtitle="Research citations"
+            subtitle="Research Sources"
           />
         </div>
       </div>
