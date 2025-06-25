@@ -9,6 +9,7 @@ import { Search, MapPin, Users, ExternalLink, Calendar, User, Activity, CheckCir
 import { Link } from 'react-router-dom'
 import { fetchPatients, matchTrials, trialInfo } from '@/functions'
 import EligibilityText from '@/components/EligibilityText'
+import { useToast } from "@/hooks/use-toast"
 
 interface PatientData {
   id: string
@@ -51,6 +52,7 @@ const MatchTrials = () => {
   const [isSearching, setIsSearching] = useState(false)
   const [isFetchingPatient, setIsFetchingPatient] = useState(false)
   const [hasSearched, setHasSearched] = useState(false)
+  const { toast } = useToast()
 
   const handleFetchPatient = async () => {
     if (!patientId.trim()) {
@@ -91,8 +93,21 @@ const MatchTrials = () => {
 
     try {
       console.log('Calling match trials API for patient:', patientData.patient_id)
+      
+      // Set a timer to show notification after 15 seconds
+      const notificationTimer = setTimeout(() => {
+        toast({
+          title: "AI Processing Update",
+          description: "Trials fetched, triggering AI-driven eligibility matching.",
+          duration: 5000,
+        })
+      }, 15000)
+
       const matchResponse = await matchTrials({ patient_id: patientData.patient_id })
       console.log('Match trials response:', matchResponse)
+
+      // Clear the timer if the API completes before 15 seconds
+      clearTimeout(notificationTimer)
 
       if (matchResponse.success) {
         console.log('Match trials completed, now fetching trial info...')
