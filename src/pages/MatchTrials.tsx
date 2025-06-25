@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom'
 import { fetchPatients, matchTrials, trialInfo } from '@/functions'
 import EligibilityText from '@/components/EligibilityText'
 import { useToast } from "@/hooks/use-toast"
+import WorkflowModal from '@/components/WorkflowModal'
 
 interface PatientData {
   id: string
@@ -96,7 +97,7 @@ const MatchTrials = () => {
       
       const notificationTimer = setTimeout(() => {
         toast({
-          title: "✅ AI Processing Update",
+          title: "✅ AI Processing Update",
           description: (
             <div className="text-sm">
               Trials fetched, triggering <strong className="font-semibold text-green-700">AI-driven eligibility matching</strong>.
@@ -180,12 +181,15 @@ const MatchTrials = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50">
       <div className="gradient-bg-medical">
         <header className="px-4 sm:px-6 py-6 sm:py-8">
-          <div className="flex items-center gap-4">
-            <SidebarTrigger className="text-white hover:bg-white/20" />
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-white">Match Trials</h1>
-              <p className="text-blue-100 text-base sm:text-lg">Find suitable clinical trials for patients</p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <SidebarTrigger className="text-white hover:bg-white/20" />
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-white">Match Trials</h1>
+                <p className="text-blue-100 text-base sm:text-lg">Find suitable clinical trials for patients</p>
+              </div>
             </div>
+            <WorkflowModal />
           </div>
         </header>
       </div>
