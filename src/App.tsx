@@ -52,7 +52,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <CopilotKit runtimeUrl="/api/copilotkit">
+        <CopilotKit runtimeUrl="/api/functions/copilotkit">
           <AppContent />
           <CopilotSidebar
             instructions="You are a helpful assistant for clinical trial researchers. You can search for patient information by patient ID and clinical trial details by trial ID. When users ask for patient or trial information, use the available functions to fetch the data and present it in a clear, organized format. You can also provide statistics about patients and trials in the system."
