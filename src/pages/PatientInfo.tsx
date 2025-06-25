@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Users, Search, User, Activity } from "lucide-react"
 import { fetchPatients } from '@/functions'
+import { ChatButton } from '@/components/ChatButton'
 
 interface PatientData {
   id: string
@@ -108,6 +109,7 @@ const PatientInfo = () => {
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600"></div>
           </div>
         </main>
+        <ChatButton />
       </div>
     )
   }
@@ -137,6 +139,7 @@ const PatientInfo = () => {
             </CardContent>
           </Card>
         </main>
+        <ChatButton />
       </div>
     )
   }
@@ -359,6 +362,7 @@ const PatientInfo = () => {
           </div>
         </div>
       </main>
+      <ChatButton />
     </div>
   )
 }
