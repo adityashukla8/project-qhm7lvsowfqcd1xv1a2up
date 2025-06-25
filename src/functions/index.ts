@@ -7,4 +7,4 @@ export const appwriteSync = superdevClient.functions.appwriteSync;
 export const syncAppwriteData = superdevClient.functions.syncAppwriteData;
 export const fetchPatients = superdevClient.functions.fetchPatients;
 export const matchTrials = superdevClient.functions.matchTrials;
-export const trial_info = superdevClient.functions.trial_info;
+export const trialIinfo = superdevClient.functions.trial_info;
