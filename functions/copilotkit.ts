@@ -1,4 +1,4 @@
-import { CopilotRuntime, OpenAIAdapter } from "@copilotkit/runtime";
+import { CopilotRuntime, OpenAIAdapter } from "npm:@copilotkit/runtime@1.9.1";
 
 Deno.serve(async (req) => {
   try {
