@@ -1,446 +1,307 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { SidebarTrigger } from "@/components/ui/sidebar"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Search, MapPin, Users, ExternalLink, Calendar, User, Activity, CheckCircle, XCircle } from "lucide-react"
-import { Link } from 'react-router-dom'
+import { Loader2, Search, Users, FileText, Brain, Globe, Info } from "lucide-react"
 import { fetchPatients, matchTrials, trialInfo } from '@/functions'
 import EligibilityText from '@/components/EligibilityText'
 import { useToast } from "@/hooks/use-toast"
 import WorkflowModal from '@/components/WorkflowModal'
 
-interface PatientData {
+interface Patient {
   id: string
   patient_id: string
   patient_name: string
   condition: string
-  chemotherapy: string[]
-  radiotherapy: string[]
   age: number
   gender: string[]
   country: string
-  metastasis: string[]
-  histology: string
-  biomarker: string
-  ecog_score: number
-  condition_recurrence: string[]
   status: string
   matched: boolean
   matched_trials_count: number
 }
 
-interface TrialInfoResult {
-  trial_id: string
-  match_criteria: string
-  reason: string
-  match_requirements: string
-  title: string
-  phase: string
-  condition: string
-  status: string
-  location: string
-  eligibility: string
-  source_url: string
+interface MatchResult {
+  patient_id: string
+  patient_name: string
+  matched_trials: Array<{
+    trial_id: string
+    title: string
+    phase: string
+    confidence_score: number
+    match_criteria: string
+    reason: string
+  }>
 }
 
 const MatchTrials = () => {
-  const [patientId, setPatientId] = useState('')
-  const [patientData, setPatientData] = useState<PatientData | null>(null)
-  const [matchingResults, setMatchingResults] = useState<TrialInfoResult[]>([])
-  const [isSearching, setIsSearching] = useState(false)
-  const [isFetchingPatient, setIsFetchingPatient] = useState(false)
-  const [hasSearched, setHasSearched] = useState(false)
+  const [patients, setPatients] = useState<Patient[]>([])
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [matching, setMatching] = useState(false)
+  const [matchResults, setMatchResults] = useState<MatchResult[]>([])
+  const [showWorkflow, setShowWorkflow] = useState(false)
   const { toast } = useToast()
 
-  const handleFetchPatient = async () => {
-    if (!patientId.trim()) {
-      alert('Please enter a patient ID')
-      return
-    }
+  useEffect(() => {
+    loadPatients()
+  }, [])
 
-    setIsFetchingPatient(true)
+  const loadPatients = async () => {
     try {
-      console.log('Fetching patient with ID:', patientId.trim())
-      const response = await fetchPatients({ patientId: patientId.trim() })
-      console.log('API Response:', response)
-      
-      if (response.success && response.patient) {
-        console.log('Patient found:', response.patient)
-        setPatientData(response.patient)
-      } else {
-        console.error('Patient not found or API error:', response)
-        alert(`Patient not found: ${response.error || 'Unknown error'}`)
-        setPatientData(null)
+      setLoading(true)
+      const response = await fetchPatients({})
+      if (response.success && response.patients) {
+        setPatients(Array.isArray(response.patients) ? response.patients : [])
       }
     } catch (error) {
-      console.error('Error fetching patient:', error)
-      alert(`Error fetching patient data: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      console.error('Error loading patients:', error)
+      toast({
+        title: "Error",
+        description: "Failed to load patients",
+        variant: "destructive",
+      })
     } finally {
-      setIsFetchingPatient(false)
+      setLoading(false)
     }
   }
 
-  const handleFindTrials = async () => {
-    if (!patientData) {
-      alert('Please fetch patient data first')
-      return
-    }
-
-    setIsSearching(true)
-    setHasSearched(false)
+  const handleMatchTrials = async () => {
+    if (!selectedPatient) return
 
     try {
-      console.log('Calling match trials API for patient:', patientData.patient_id)
+      setMatching(true)
+      const response = await matchTrials({ patient_id: selectedPatient.patient_id })
       
-      const notificationTimer = setTimeout(() => {
+      if (response.success && response.matches) {
+        setMatchResults([response.matches])
         toast({
-          title: "✅ AI Processing Update",
-          description: (
-            <div className="text-sm">
-              Trials fetched, triggering <strong className="font-semibold text-green-700">AI-driven eligibility matching</strong>.
-            </div>
-          ),
-          duration: 5000,
-          className: "bg-green-50 border border-green-300 text-green-800", // green toast styling
+          title: "Success",
+          description: `Found ${response.matches.matched_trials.length} matching trials for ${selectedPatient.patient_name}`,
         })
-      }, 15000)
-
-
-      const matchResponse = await matchTrials({ patient_id: patientData.patient_id })
-      console.log('Match trials response:', matchResponse)
-
-      // Clear the timer if the API completes before 15 seconds
-      clearTimeout(notificationTimer)
-
-      if (matchResponse.success) {
-        console.log('Match trials completed, now fetching trial info...')
-        
-        // Call trial_info API after matchtrials completes
-        const trialInfoResponse = await trialInfo({ patient_id: patientData.patient_id })
-        console.log('Trial info response:', trialInfoResponse)
-        
-        if (trialInfoResponse.success && trialInfoResponse.trials) {
-          setMatchingResults(trialInfoResponse.trials)
-        } else {
-          console.error('Trial info API error:', trialInfoResponse)
-          setMatchingResults([])
-        }
       } else {
-        console.error('Match trials API error:', matchResponse)
-        setMatchingResults([])
+        toast({
+          title: "No matches",
+          description: response.error || "No matching trials found",
+          variant: "destructive",
+        })
       }
-      
-      setHasSearched(true)
     } catch (error) {
-      console.error('Error finding matching trials:', error)
-      setMatchingResults([])
-      setHasSearched(true)
+      console.error('Error matching trials:', error)
+      toast({
+        title: "Error",
+        description: "Failed to match trials",
+        variant: "destructive",
+      })
     } finally {
-      setIsSearching(false)
+      setMatching(false)
     }
   }
 
-  const getPhaseColor = (phase: string) => {
-    switch (phase) {
-      case 'Phase 1': return 'bg-blue-100 text-blue-800'
-      case 'Phase 2': return 'bg-green-100 text-green-800'
-      case 'Phase 3': return 'bg-yellow-100 text-yellow-800'
-      case 'Phase 4': return 'bg-red-100 text-red-800'
-      default: return 'bg-gray-100 text-gray-800'
+  const handleGetTrialInfo = async (trialId: string) => {
+    try {
+      const response = await trialInfo({ trial_id: trialId })
+      if (response.success && response.trial_info) {
+        toast({
+          title: "Trial Information",
+          description: "Trial details retrieved successfully",
+        })
+      }
+    } catch (error) {
+      console.error('Error getting trial info:', error)
+      toast({
+        title: "Error",
+        description: "Failed to get trial information",
+        variant: "destructive",
+      })
     }
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Recruiting': return 'bg-green-100 text-green-800'
-      case 'Active': return 'bg-blue-100 text-blue-800'
-      case 'Completed': return 'bg-gray-100 text-gray-800'
-      default: return 'bg-gray-100 text-gray-800'
-    }
-  }
-
-  const getMatchCriteriaColor = (criteria: string) => {
-    switch (criteria.toLowerCase()) {
-      case 'match': return 'bg-green-100 text-green-800 border-green-200'
-      case 'partial match': return 'bg-yellow-100 text-yellow-800 border-yellow-200'
-      case 'no match': return 'bg-red-100 text-red-800 border-red-200'
-      default: return 'bg-gray-100 text-gray-800 border-gray-200'
-    }
-  }
-
-  const getMatchIcon = (criteria: string) => {
-    return criteria.toLowerCase() === 'match' ? 
-      <CheckCircle className="w-4 h-4 text-green-600" /> : 
-      <XCircle className="w-4 h-4 text-red-600" />
-  }
+  const filteredPatients = patients.filter(patient =>
+    patient.patient_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    patient.patient_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    patient.condition.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50">
       <div className="bg-blue-600">
-        <header className="px-4 sm:px-6 py-6 sm:py-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <SidebarTrigger className="text-white hover:bg-white/20" />
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-white">Match Trials</h1>
-                <p className="text-blue-100 text-base sm:text-lg">Find suitable clinical trials for patients</p>
-              </div>
+        <header className="px-4 sm:px-6 py-4 sm:py-6">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <SidebarTrigger className="text-white hover:bg-white/20 p-2" />
+            <div className="min-w-0 flex-1">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white truncate">Match Clinical Trials</h1>
+              <p className="text-blue-100 text-sm sm:text-base lg:text-lg mt-1">Find suitable trials for patients</p>
             </div>
-            <WorkflowModal />
+            <Button
+              onClick={() => setShowWorkflow(true)}
+              variant="secondary"
+              size="sm"
+              className="hidden sm:flex items-center gap-2"
+            >
+              <Info className="w-4 h-4" />
+              How it works
+            </Button>
           </div>
         </header>
       </div>
-      
-      <main className="p-4 sm:p-8 -mt-4 relative z-10 max-w-6xl mx-auto">
-        <div className="space-y-6 sm:space-y-8 animate-slide-up">
-          {/* Patient Search */}
-          <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm rounded-2xl overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100">
-              <CardTitle className="flex items-center gap-3 text-lg sm:text-xl">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl flex items-center justify-center">
-                  <Search className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                </div>
-                Patient Search
+
+      <main className="p-4 sm:p-6 lg:p-8 -mt-2 sm:-mt-4 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Patient Selection */}
+          <Card className="bg-white/80 backdrop-blur-sm border-white/20 shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="w-5 h-5 text-blue-600" />
+                Select Patient
               </CardTitle>
+              <CardDescription>
+                Choose a patient to find matching clinical trials
+              </CardDescription>
             </CardHeader>
-            <CardContent className="p-4 sm:p-8 space-y-4 sm:space-y-6">
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex-1 space-y-2">
-                  <Label htmlFor="patientId" className="text-sm font-semibold text-gray-700">Patient ID</Label>
-                  <Input 
-                    id="patientId" 
-                    placeholder="Enter patient ID to search (e.g., P001, P002, etc.)"
-                    className="h-10 sm:h-12 border-0 bg-gray-50 rounded-xl"
-                    value={patientId}
-                    onChange={(e) => setPatientId(e.target.value)}
-                  />
-                </div>
-                <div className="flex items-end">
-                  <Button 
-                    className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 rounded-xl px-6 h-10 sm:h-12 shadow-lg w-full sm:w-auto"
-                    onClick={handleFetchPatient}
-                    disabled={isFetchingPatient}
-                  >
-                    <Search className="w-4 h-4 mr-2" />
-                    {isFetchingPatient ? 'Searching...' : 'Fetch Patient'}
-                  </Button>
-                </div>
+            <CardContent className="space-y-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Input
+                  placeholder="Search patients..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
               </div>
-              {!patientData && !isFetchingPatient && (
-                <div className="text-sm text-gray-600 bg-blue-50 px-4 py-3 rounded-lg">
-                  <strong>Tip:</strong> Try patient IDs like P001, P002, P003, etc. Make sure the patient exists in the external API.
+
+              {loading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
                 </div>
+              ) : (
+                <div className="space-y-2 max-h-96 overflow-y-auto">
+                  {filteredPatients.map((patient) => (
+                    <div
+                      key={patient.id}
+                      onClick={() => setSelectedPatient(patient)}
+                      className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                        selectedPatient?.id === patient.id
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="font-medium">{patient.patient_name}</h3>
+                          <p className="text-sm text-gray-600">ID: {patient.patient_id}</p>
+                          <p className="text-sm text-gray-600">{patient.condition}</p>
+                        </div>
+                        <div className="text-right">
+                          <Badge variant={patient.status === 'processed' ? 'default' : 'secondary'}>
+                            {patient.status}
+                          </Badge>
+                          {patient.matched && (
+                            <p className="text-xs text-green-600 mt-1">
+                              {patient.matched_trials_count} matches
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {selectedPatient && (
+                <Button
+                  onClick={handleMatchTrials}
+                  disabled={matching}
+                  className="w-full bg-blue-600 hover:bg-blue-700"
+                >
+                  {matching ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      Matching Trials...
+                    </>
+                  ) : (
+                    <>
+                      <Brain className="w-4 h-4 mr-2" />
+                      Match Trials
+                    </>
+                  )}
+                </Button>
               )}
             </CardContent>
           </Card>
 
-          {/* Patient Details */}
-          {patientData && (
-            <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm rounded-2xl overflow-hidden">
-              <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 border-b border-green-100">
-                <CardTitle className="flex items-center gap-3 text-lg sm:text-xl">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-green-600 to-green-700 rounded-xl flex items-center justify-center">
-                    <User className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                  </div>
-                  Patient Details
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-4 sm:p-8">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                  <div className="space-y-2">
-                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Patient Name</Label>
-                    <p className="font-medium text-gray-900">{patientData.patient_name}</p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Age</Label>
-                    <p className="font-medium text-gray-900">{patientData.age}</p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Gender</Label>
-                    <p className="font-medium text-gray-900">{Array.isArray(patientData.gender) ? patientData.gender.join(', ') : patientData.gender}</p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Condition</Label>
-                    <p className="font-medium text-gray-900">{patientData.condition}</p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Country</Label>
-                    <p className="font-medium text-gray-900">{patientData.country}</p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-gray-500 uppercase tracking-wide">ECOG Score</Label>
-                    <p className="font-medium text-gray-900">{patientData.ecog_score}</p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Histology</Label>
-                    <p className="font-medium text-gray-900">{patientData.histology}</p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Biomarker</Label>
-                    <p className="font-medium text-gray-900">{patientData.biomarker}</p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Chemotherapy</Label>
-                    <p className="font-medium text-gray-900">{Array.isArray(patientData.chemotherapy) ? patientData.chemotherapy.join(', ') : patientData.chemotherapy}</p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Radiotherapy</Label>
-                    <p className="font-medium text-gray-900">{Array.isArray(patientData.radiotherapy) ? patientData.radiotherapy.join(', ') : patientData.radiotherapy}</p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Metastasis</Label>
-                    <p className="font-medium text-gray-900">{Array.isArray(patientData.metastasis) ? patientData.metastasis.join(', ') : patientData.metastasis}</p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Condition Recurrence</Label>
-                    <p className="font-medium text-gray-900">{Array.isArray(patientData.condition_recurrence) ? patientData.condition_recurrence.join(', ') : patientData.condition_recurrence}</p>
-                  </div>
-                </div>
-                
-                <div className="mt-6 pt-6 border-t border-gray-100">
-                  <Button 
-                    className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white border-0 rounded-xl px-6 h-10 sm:h-12 shadow-lg"
-                    onClick={handleFindTrials}
-                    disabled={isSearching}
-                  >
-                    <Activity className="w-4 h-4 mr-2" />
-                    {isSearching ? 'Finding Trials...' : 'Match Clinical Trials'}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Matching Results */}
-          <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm rounded-2xl overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-purple-50 to-indigo-50 border-b border-purple-100">
-              <CardTitle className="text-lg sm:text-xl">Matching Results</CardTitle>
+          {/* Match Results */}
+          <Card className="bg-white/80 backdrop-blur-sm border-white/20 shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="w-5 h-5 text-green-600" />
+                Matching Results
+              </CardTitle>
+              <CardDescription>
+                Clinical trials matched for the selected patient
+              </CardDescription>
             </CardHeader>
-            <CardContent className="p-4 sm:p-8">
-              {isSearching ? (
-                <div className="text-center py-12">
-                  <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600 mx-auto mb-4"></div>
-                  <p className="text-gray-600 text-lg">Finding matching clinical trials...</p>
-                  <p className="text-gray-500 text-sm mt-2">Processing match criteria and fetching trial details...</p>
+            <CardContent>
+              {matchResults.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <FileText className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                  <p>No matches yet. Select a patient and click "Match Trials" to see results.</p>
                 </div>
-              ) : hasSearched ? (
-                matchingResults.length > 0 ? (
-                  <div className="space-y-4 sm:space-y-6">
-                    <div className="text-sm text-gray-600 bg-blue-50 px-4 py-2 rounded-lg inline-block">
-                      Found {matchingResults.length} matching trial{matchingResults.length !== 1 ? 's' : ''}
-                    </div>
-                    {matchingResults.map((trial, index) => (
-                      <div key={trial.trial_id} className="border border-gray-200 rounded-2xl p-4 sm:p-6 bg-white hover:shadow-lg transition-all duration-300 animate-slide-up" style={{animationDelay: `${index * 0.1}s`}}>
-                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-4">
-                          <div className="flex-1">
-                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-3">
-                              {trial.title}
-                            </h3>
-                            <div className="flex flex-wrap gap-2 mb-3">
-                              <Badge className={`${getPhaseColor(trial.phase)} border font-medium px-3 py-1`}> 
-                                {trial.phase}
-                              </Badge>
-                              <Badge className={`${getStatusColor(trial.status)} border font-medium px-3 py-1`}> 
-                                {trial.status}
-                              </Badge>
-                              <Badge className={`${getMatchCriteriaColor(trial.match_criteria)} border font-medium px-3 py-1`}> 
-                                {trial.match_criteria}
-                              </Badge>
-                            </div>
-                            <div className="flex items-center gap-2 mb-3">
-                              {getMatchIcon(trial.match_criteria)}
-                              <span className={`text-sm font-medium ${trial.match_criteria.toLowerCase() === 'match' ? 'text-green-700' : 'text-red-700'}`}>
-                                {trial.reason}
-                              </span>
-                            </div>
-                            <div className="space-y-3 mb-3">
-                              <div className="bg-blue-50 p-4 rounded-lg">
-                                <div className="text-sm font-semibold text-blue-900 mb-2">Match Requirements:</div>
-                                <EligibilityText 
-                                  text={trial.match_requirements} 
-                                  maxItems={3}
-                                  maxChars={250}
-                                />
-                              </div>
-                              <div className="bg-gray-50 p-4 rounded-lg">
-                                <div className="text-sm font-semibold text-gray-900 mb-2">Eligibility Criteria:</div>
-                                <EligibilityText 
-                                  text={trial.eligibility} 
-                                  maxItems={4}
-                                  maxChars={300}
-                                />
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex flex-col gap-2">
-                            {trial.source_url && (
-                              <a href={trial.source_url} target="_blank" rel="noopener noreferrer">
-                                <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 rounded-xl px-4 sm:px-6 h-10 sm:h-11 shadow-lg w-full">
-                                  <ExternalLink className="w-4 h-4 mr-2" />
-                                  View on ClinicalTrials.gov
-                                </Button>
-                              </a>
-                            )}
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                              <Calendar className="w-4 h-4 text-blue-600" />
-                            </div>
-                            <div>
-                              <div className="text-xs text-gray-500 uppercase tracking-wide">Condition</div>
-                              <div className="font-medium text-gray-900">{trial.condition}</div>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                              <MapPin className="w-4 h-4 text-green-600" />
-                            </div>
-                            <div>
-                              <div className="text-xs text-gray-500 uppercase tracking-wide">Location</div>
-                              <div className="font-medium text-gray-900">{trial.location}</div>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                              <Users className="w-4 h-4 text-purple-600" />
-                            </div>
-                            <div>
-                              <div className="text-xs text-gray-500 uppercase tracking-wide">Trial ID</div>
-                              <div className="font-medium text-gray-900 font-mono">{trial.trial_id}</div>
-                            </div>
-                          </div>
-                        </div>
+              ) : (
+                <div className="space-y-4">
+                  {matchResults.map((result, index) => (
+                    <div key={index} className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-medium text-lg">{result.patient_name}</h3>
+                        <Badge variant="outline">
+                          {result.matched_trials.length} trials found
+                        </Badge>
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-12">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Search className="w-8 h-8 text-gray-400" />
+                      
+                      <div className="space-y-3 max-h-96 overflow-y-auto">
+                        {result.matched_trials.map((trial, trialIndex) => (
+                          <div key={trialIndex} className="p-4 border rounded-lg bg-gray-50">
+                            <div className="flex justify-between items-start mb-2">
+                              <h4 className="font-medium text-blue-600">{trial.title}</h4>
+                              <Badge variant="secondary">{trial.phase}</Badge>
+                            </div>
+                            
+                            <p className="text-sm text-gray-600 mb-2">ID: {trial.trial_id}</p>
+                            
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="text-sm font-medium">Confidence:</span>
+                              <Badge variant={trial.confidence_score >= 0.8 ? 'default' : 'secondary'}>
+                                {(trial.confidence_score * 100).toFixed(0)}%
+                              </Badge>
+                            </div>
+                            
+                            <EligibilityText text={trial.reason} />
+                            
+                            <Button
+                              onClick={() => handleGetTrialInfo(trial.trial_id)}
+                              variant="outline"
+                              size="sm"
+                              className="mt-3"
+                            >
+                              <Globe className="w-4 h-4 mr-2" />
+                              Get Trial Info
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                    <h3 className="text-xl font-semibold mb-2 text-gray-900">No matching trials found</h3>
-                    <p className="text-gray-500">No clinical trials match this patient's criteria.</p>
-                  </div>
-                )
-              )
-              : (
-                <div className="text-center py-12">
-                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Search className="w-8 h-8 text-blue-600" />
-                  </div>
-                  <h3 className="text-xl font-semibold mb-2 text-gray-900">Ready to find trials</h3>
-                  <p className="text-gray-500">Search for a patient by ID to find matching clinical trials</p>
+                  ))}
                 </div>
               )}
             </CardContent>
           </Card>
         </div>
       </main>
+
+      <WorkflowModal open={showWorkflow} onOpenChange={setShowWorkflow} />
     </div>
   )
 }
