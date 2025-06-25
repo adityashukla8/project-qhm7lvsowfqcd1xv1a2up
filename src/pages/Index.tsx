@@ -1,6 +1,5 @@
 import { SidebarTrigger } from "@/components/ui/sidebar"
-import { DashboardMetrics } from "@/components/DashboardMetrics"
-import { AppWriteSync } from "@/components/AppWriteSync"
+import { MetricsOverview } from "@/components/MetricsOverview"
 
 const Index = () => {
   return (
@@ -18,15 +17,7 @@ const Index = () => {
       </div>
       
       <main className="p-4 sm:p-8 -mt-4 relative z-10">
-        <div className="space-y-6 sm:space-y-8">
-          {/* AppWrite Sync Component */}
-          <div className="animate-slide-up">
-            <AppWriteSync />
-          </div>
-          
-          {/* Dashboard Metrics */}
-          <DashboardMetrics />
-        </div>
+        <MetricsOverview />
       </main>
     </div>
   )
