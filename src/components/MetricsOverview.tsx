@@ -59,45 +59,42 @@ export function MetricsOverview() {
   }
 
   return (
-    <div className="space-y-6 sm:space-y-8">
+    <div className="space-y-8">
       {/* Patient Metrics */}
       <div className="animate-slide-up">
-        <div className="mb-4 sm:mb-6">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Patient Metrics</h2>
-          <p className="text-gray-600 text-sm sm:text-base">Patient processing and scanning statistics</p>
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Patient Metrics</h2>
+          <p className="text-gray-600">Patient processing and scanning statistics</p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <MetricCard
             title="Total Patients"
             value={data.total_patients}
             icon={Users}
             subtitle="In database"
-            className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0"
           />
           <MetricCard
             title="Patients Scanned"
             value={data.total_patients_scanned}
             icon={Search}
             subtitle="Processed for matching"
-            className="bg-gradient-to-br from-green-500 to-green-600 text-white border-0"
           />
           <MetricCard
             title="Patients with Matches"
             value={data.patients_with_match}
             icon={Target}
             subtitle="Successfully matched"
-            className="bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0"
           />
         </div>
       </div>
 
       {/* Trial Metrics */}
       <div className="animate-slide-up" style={{animationDelay: '0.1s'}}>
-        <div className="mb-4 sm:mb-6">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Trial Metrics</h2>
-          <p className="text-gray-600 text-sm sm:text-base">Clinical trial database and enrichment statistics</p>
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Trial Metrics</h2>
+          <p className="text-gray-600">Clinical trial database and enrichment statistics</p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <MetricCard
             title="Total Trials"
             value={data.total_trials}
@@ -121,11 +118,11 @@ export function MetricsOverview() {
 
       {/* Matching Performance */}
       <div className="animate-slide-up" style={{animationDelay: '0.2s'}}>
-        <div className="mb-4 sm:mb-6">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Matching Performance</h2>
-          <p className="text-gray-600 text-sm sm:text-base">Patient-trial matching efficiency and success rates</p>
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Matching Performance</h2>
+          <p className="text-gray-600">Patient-trial matching efficiency and success rates</p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <MetricCard
             title="Match Rate"
             value={`${data.match_rate_percent.toFixed(1)}%`}
@@ -144,21 +141,21 @@ export function MetricsOverview() {
             icon={Search}
             subtitle="Trials scanned"
           />
-          <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 bg-orange-100 rounded-lg">
-                <TrendingUp className="h-5 w-5 text-orange-600" />
+          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-blue-50 rounded-lg">
+                <TrendingUp className="h-5 w-5 text-blue-600" />
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900">Top Conditions</h3>
                 <p className="text-sm text-gray-600">Most matched</p>
               </div>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {data.top_matched_conditions.map(([condition, count], index) => (
-                <div key={index} className="flex justify-between items-center">
-                  <span className="text-sm text-gray-700 truncate">{condition}</span>
-                  <span className="text-sm font-medium text-gray-900">{count}</span>
+                <div key={index} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
+                  <span className="text-sm text-gray-700 font-medium truncate">{condition}</span>
+                  <span className="text-sm font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-full">{count}</span>
                 </div>
               ))}
             </div>

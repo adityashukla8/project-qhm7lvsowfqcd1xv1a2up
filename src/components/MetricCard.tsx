@@ -1,56 +1,30 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { LucideIcon } from "lucide-react"
+import { LucideIcon } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 interface MetricCardProps {
   title: string
   value: string | number
-  subtitle?: string
   icon: LucideIcon
-  trend?: {
-    value: number
-    isPositive: boolean
-  }
+  subtitle?: string
   className?: string
 }
 
-export function MetricCard({ 
-  title, 
-  value, 
-  subtitle, 
-  icon: Icon, 
-  trend, 
-  className = "" 
-}: MetricCardProps) {
-  const isBlueCard = className.includes('bg-gradient-to-br from-blue-500')
-  
+export function MetricCard({ title, value, icon: Icon, subtitle, className }: MetricCardProps) {
   return (
-    <Card className={`${className} card-hover border-0 shadow-lg ${!isBlueCard ? 'bg-white/80 backdrop-blur-sm' : ''} rounded-2xl overflow-hidden`}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-        <CardTitle className={`text-xs sm:text-sm font-semibold uppercase tracking-wide ${isBlueCard ? 'text-blue-100' : 'text-gray-600'}`}>
-          {title}
-        </CardTitle>
-        <div className={`w-8 h-8 sm:w-10 sm:h-10 ${isBlueCard ? 'bg-white/20' : 'bg-gradient-to-r from-blue-500 to-blue-600'} rounded-xl flex items-center justify-center`}>
-          <Icon className={`h-4 w-4 sm:h-5 sm:w-5 ${isBlueCard ? 'text-white' : 'text-white'}`} />
+    <div className={cn(
+      "bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-1",
+      className
+    )}>
+      <div className="flex items-center gap-3 mb-4">
+        <div className="p-2 bg-blue-50 rounded-lg">
+          <Icon className="h-5 w-5 text-blue-600" />
         </div>
-      </CardHeader>
-      <CardContent>
-        <div className={`text-2xl sm:text-3xl font-bold mb-1 ${isBlueCard ? 'text-white' : 'text-gray-900'}`}>{value}</div>
-        {subtitle && (
-          <p className={`text-xs sm:text-sm ${isBlueCard ? 'text-blue-100' : 'text-gray-500'}`}>{subtitle}</p>
-        )}
-        {trend && (
-          <div className="flex items-center mt-3 pt-3 border-t border-gray-100">
-            <div className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-              trend.isPositive 
-                ? 'bg-green-100 text-green-800' 
-                : 'bg-red-100 text-red-800'
-            }`}>
-              {trend.isPositive ? '+' : ''}{trend.value}%
-            </div>
-            <span className="text-xs text-gray-500 ml-2">from last month</span>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+        <div className="flex-1">
+          <h3 className="font-semibold text-gray-900 text-sm">{title}</h3>
+          {subtitle && <p className="text-xs text-gray-600">{subtitle}</p>}
+        </div>
+      </div>
+      <div className="text-2xl font-bold text-gray-900">{value}</div>
+    </div>
   )
 }
