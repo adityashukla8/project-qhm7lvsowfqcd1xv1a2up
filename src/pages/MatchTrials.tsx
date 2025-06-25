@@ -94,14 +94,19 @@ const MatchTrials = () => {
     try {
       console.log('Calling match trials API for patient:', patientData.patient_id)
       
-      // Set a timer to show notification after 15 seconds
       const notificationTimer = setTimeout(() => {
         toast({
-          title: "AI Processing Update",
-          description: "Trials fetched, triggering AI-driven eligibility matching.",
+          title: "✅ AI Processing Update",
+          description: (
+            <div className="text-sm">
+              Trials fetched, triggering <strong className="font-semibold text-green-700">AI-driven eligibility matching</strong>.
+            </div>
+          ),
           duration: 5000,
+          className: "bg-green-50 border border-green-300 text-green-800", // green toast styling
         })
       }, 15000)
+
 
       const matchResponse = await matchTrials({ patient_id: patientData.patient_id })
       console.log('Match trials response:', matchResponse)
