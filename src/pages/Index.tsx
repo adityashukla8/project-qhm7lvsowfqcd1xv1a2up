@@ -4,7 +4,7 @@ import { MetricsOverview } from "@/components/MetricsOverview"
 const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50">
-      <div className="gradient-bg-medical">
+      <div className="bg-blue-600">
         <header className="px-4 sm:px-6 py-6 sm:py-8">
           <div className="flex items-center gap-4">
             <SidebarTrigger className="text-white hover:bg-white/20" />
