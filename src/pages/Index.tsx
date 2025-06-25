@@ -9,8 +9,8 @@ const Index = () => {
           <div className="flex items-center gap-4">
             <SidebarTrigger className="text-white hover:bg-white/20" />
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-white">Clinical Trial Matching Dashboard</h1>
-              <p className="text-blue-100 text-base sm:text-lg">AI-powered patient-trial matching system</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white">Criteria-AI Dashboard</h1>
+              <p className="text-blue-100 text-base sm:text-lg">AI-Driven Clinical Trials Matching System</p>
             </div>
           </div>
         </header>
