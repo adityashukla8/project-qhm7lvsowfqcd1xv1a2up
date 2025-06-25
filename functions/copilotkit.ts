@@ -17,7 +17,7 @@ Deno.serve(async (req) => {
 
     const serviceAdapter = new GoogleGenerativeAIAdapter({
       apiKey: geminiApiKey,
-      model: "gemini-1.5-flash",
+      model: "gemini-2.5-flash",
     });
 
     const runtime = new CopilotRuntime();
