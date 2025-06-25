@@ -39,6 +39,7 @@ const TrialDetail = () => {
   const { id } = useParams<{ id: string }>()
   const [trial, setTrial] = useState<TrialData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [showAllCitations, setShowAllCitations] = useState(false)
 
   useEffect(() => {
     const fetchTrialData = async () => {
@@ -99,25 +100,45 @@ const TrialDetail = () => {
     }
   }
 
-  const formatCitations = (citations: string[] | string) => {
+  const formatCitations = (citations: string[] | string, showAll: boolean) => {
     if (!citations) return null
   
     const citationList = Array.isArray(citations)
       ? citations
       : citations.split(/[;,]/).map(c => c.trim()).filter(Boolean)
   
-    return citationList.map((citation, index) => (
-      <a
-        key={index}
-        href={citation}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-block bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs mr-2 mb-1 hover:underline"
-      >
-        {citation}
-      </a>
-    ))
+    const visibleCitations = showAll ? citationList : citationList.slice(0, 20)
+  
+    return (
+      <div className="space-y-2">
+        <div className="flex flex-wrap">
+          {visibleCitations.map((citation, index) => (
+            <a
+              key={index}
+              href={citation}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs mr-2 mb-1 hover:underline"
+            >
+              {citation}
+            </a>
+          ))}
+        </div>
+  
+        {citationList.length > 20 && (
+          <button
+            className="text-sm text-blue-600 hover:underline mt-2"
+            onClick={() => setShowAllCitations(!showAllCitations)}
+          >
+            {showAll
+              ? 'Show Fewer Citations'
+              : `Show ${citationList.length - 20} Other Citation${citationList.length - 20 === 1 ? '' : 's'}`}
+          </button>
+        )}
+      </div>
+    )
   }
+
 
 
   if (loading) {
@@ -461,9 +482,7 @@ const TrialDetail = () => {
                         <BookOpen className="w-4 h-4 text-purple-600" />
                         Citations
                       </h4>
-                      <div className="flex flex-wrap">
-                        {formatCitations(trial.citations)}
-                      </div>
+                      {formatCitations(trial.citations, showAllCitations)}
                     </div>
                   )}
                 </div>
