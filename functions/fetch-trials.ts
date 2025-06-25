@@ -1,10 +1,14 @@
 Deno.serve(async (req) => {
   try {
-    console.log('Fetching trials from external API...');
+    console.log('Fetching trials from /all_trials endpoint...');
     
     const baseUrl = 'https://clinicaltrials-multiagent-502131642989.asia-south1.run.app';
+    const endpoint = '/all_trials';
+    const fullUrl = `${baseUrl}${endpoint}`;
     
-    const response = await fetch(`${baseUrl}/all_trials`, {
+    console.log('Making request to:', fullUrl);
+    
+    const response = await fetch(fullUrl, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -13,15 +17,16 @@ Deno.serve(async (req) => {
     });
 
     console.log('API Response status:', response.status);
+    console.log('API Response headers:', Object.fromEntries(response.headers.entries()));
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('API Error:', errorText);
+      console.error('API Error response:', errorText);
       throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
     }
 
     const trials = await response.json();
-    console.log('Successfully fetched trials:', trials.length || 'unknown count');
+    console.log('Successfully fetched trials count:', Array.isArray(trials) ? trials.length : 'Not an array');
     
     return new Response(JSON.stringify({ 
       success: true, 
@@ -36,10 +41,10 @@ Deno.serve(async (req) => {
       },
     });
   } catch (error) {
-    console.error('Error fetching trials:', error);
+    console.error('Error in fetch-trials function:', error);
     return new Response(JSON.stringify({ 
       success: false, 
-      error: error.message || 'Unknown error occurred'
+      error: `API request failed: ${error.message}`
     }), {
       status: 500,
       headers: { 
