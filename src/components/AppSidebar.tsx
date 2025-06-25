@@ -11,6 +11,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarHeader,
+  SidebarFooter,
 } from "@/components/ui/sidebar"
 
 // Menu items without Protocol Optimization
@@ -53,8 +54,7 @@ export function AppSidebar() {
             <Activity className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-sidebar-foreground">CriteriAI</h2>
-            <p className="text-xs text-sidebar-foreground/70">AI-Driven Clinical Trials Matching System</p>
+            <h2 className="text-lg font-bold text-sidebar-foreground">Criteria-AI</h2>
           </div>
         </div>
       </SidebarHeader>
@@ -77,6 +77,9 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter className="p-4 border-t border-sidebar-border">
+        <p className="text-xs text-sidebar-foreground/70 text-center">AI-Driven Clinical Trials Matching System</p>
+      </SidebarFooter>
     </Sidebar>
   )
 }
