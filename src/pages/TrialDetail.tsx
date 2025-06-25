@@ -47,7 +47,8 @@ const TrialDetail = () => {
       try {
         const response = await fetchTrials()
         if (response.success) {
-          const foundTrial = response.data.find((t: TrialData) => t.trial_id === id)
+          const trials = response?.data?.trials ?? []
+          const foundTrial = trials.find((t: TrialData) => t.trial_id === id)
           setTrial(foundTrial || null)
         } else {
           console.error('Error fetching trials:', response.error)
