@@ -31,7 +31,7 @@ interface TrialData {
   safety_documents?: string
   sites?: string
   patient_faq_summary?: string
-  citations?: string
+  citations?: string[] | string
   matched_patients_count: number
 }
 
@@ -99,17 +99,26 @@ const TrialDetail = () => {
     }
   }
 
-  const formatCitations = (citations: string) => {
+  const formatCitations = (citations: string[] | string) => {
     if (!citations) return null
-    
-    const citationList = citations.split(/[;,]/).map(citation => citation.trim()).filter(citation => citation.length > 0)
-    
+  
+    const citationList = Array.isArray(citations)
+      ? citations
+      : citations.split(/[;,]/).map(c => c.trim()).filter(Boolean)
+  
     return citationList.map((citation, index) => (
-      <span key={index} className="inline-block bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs mr-2 mb-1">
+      <a
+        key={index}
+        href={citation}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-block bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs mr-2 mb-1 hover:underline"
+      >
         {citation}
-      </span>
+      </a>
     ))
   }
+
 
   if (loading) {
     return (
