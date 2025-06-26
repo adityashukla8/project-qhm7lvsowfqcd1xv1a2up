@@ -1,53 +1,65 @@
 Deno.serve(async (req) => {
   try {
-    const { patient_id } = await req.json()
+    const body = await req.json().catch(() => ({}));
+    const { patient_id } = body;
+    const baseUrl = "https://clinicaltrials-multiagent-502131642989.asia-south1.run.app";
     
-    if (!patient_id) {
-      return new Response(JSON.stringify({ 
-        success: false, 
-        error: 'Patient ID is required' 
+    console.log('Matching trials for patient:', { patient_id });
+    
+    if (!patient_id || !patient_id.trim()) {
+      return new Response(JSON.stringify({
+        success: false,
+        error: "Patient ID is required"
       }), {
         status: 400,
         headers: { "Content-Type": "application/json" }
-      })
+      });
     }
-
-    console.log('Calling matchtrials API for patient:', patient_id)
     
-    // Call your external matchtrials API
-    const response = await fetch('https://clinicaltrials-multiagent-502131642989.asia-south1.run.app/matchtrials', {
+    // Call the /matchtrials endpoint
+    console.log(`Calling /matchtrials endpoint for patient: ${patient_id}`);
+    const response = await fetch(`${baseUrl}/matchtrials`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ patient_id })
-    })
-    
-    console.log('Matchtrials API Response status:', response.status)
+      body: JSON.stringify({ patient_id: patient_id.trim() })
+    });
     
     if (!response.ok) {
-      throw new Error(`Matchtrials API request failed: ${response.status} ${response.statusText}`)
+      console.error(`Failed to match trials: ${response.status} ${response.statusText}`);
+      const errorText = await response.text();
+      console.error('Error response:', errorText);
+      
+      return new Response(JSON.stringify({
+        success: false,
+        error: `Failed to match trials: ${response.status} ${response.statusText}`,
+        details: errorText
+      }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" }
+      });
     }
     
-    const responseData = await response.json()
-    console.log('Matchtrials API response:', responseData)
+    const matchResults = await response.json();
+    console.log('Match results received:', matchResults);
     
-    return new Response(JSON.stringify({ 
-      success: true, 
-      data: responseData
+    return new Response(JSON.stringify({
+      success: true,
+      matches: matchResults
     }), {
       status: 200,
       headers: { "Content-Type": "application/json" }
-    })
+    });
     
   } catch (error) {
-    console.error('Error in match-trials function:', error)
-    return new Response(JSON.stringify({ 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Unknown error occurred'
+    console.error('Error in match-trials function:', error);
+    return new Response(JSON.stringify({
+      success: false,
+      error: error.message
     }), {
       status: 500,
       headers: { "Content-Type": "application/json" }
-    })
+    });
   }
-})
+});
