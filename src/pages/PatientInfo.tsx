@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Users, Search, User, Activity } from "lucide-react"
+import { fetchPatients } from '@/functions'
 
 interface PatientData {
   id: string
@@ -36,43 +37,24 @@ const PatientInfo = () => {
   useEffect(() => {
     const loadPatients = async () => {
       try {
-        console.log('Fetching all patients from external API...')
+        console.log('Fetching patients using backend function...')
+        const response = await fetchPatients({})
+        console.log('Backend function response:', response)
         
-        // Fetch directly from your external API
-        const response = await fetch('https://clinicaltrials-multiagent-502131642989.asia-south1.run.app/patients', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        })
-        
-        console.log('API Response status:', response.status)
-        
-        if (!response.ok) {
-          throw new Error(`API request failed: ${response.status} ${response.statusText}`)
-        }
-        
-        const data = await response.json()
-        console.log('API Response data:', data)
-        
-        // Handle different possible response structures
-        let patientsArray = []
-        if (Array.isArray(data)) {
-          patientsArray = data
-        } else if (data.patients && Array.isArray(data.patients)) {
-          patientsArray = data.patients
-        } else if (data.data && Array.isArray(data.data)) {
-          patientsArray = data.data
+        if (response.success && response.patients) {
+          // Ensure patients is an array
+          const patientsArray = Array.isArray(response.patients) ? response.patients : []
+          console.log('Patients array length:', patientsArray.length)
+          
+          setPatients(patientsArray)
+          setFilteredPatients(patientsArray)
+          setError(null)
         } else {
-          console.error('Unexpected API response structure:', data)
-          throw new Error('Unexpected API response structure')
+          console.error('Backend function error:', response)
+          setError('Failed to fetch patients: ' + (response.error || 'Unknown error'))
+          setPatients([])
+          setFilteredPatients([])
         }
-        
-        console.log('Processed patients array:', patientsArray)
-        
-        setPatients(patientsArray)
-        setFilteredPatients(patientsArray)
-        setError(null)
       } catch (error) {
         console.error('Error loading patients:', error)
         setError('Error loading patients: ' + (error instanceof Error ? error.message : 'Unknown error'))
