@@ -1,216 +1,114 @@
-import { useEffect, useState } from 'react'
-import { Users, Activity, FileText, Target, TrendingUp, Search, Bot, Wrench } from 'lucide-react'
-import { MetricCard } from './MetricCard'
-import { AgentModal } from './AgentModal'
-import { ToolsModal } from './ToolsModal'
-import { fetchMetrics } from '@/functions'
-
-interface MetricsData {
-  total_patients: number
-  total_trials: number
-  total_patients_scanned: number
-  patients_with_match: number
-  total_matched_trials: number
-  avg_trials_scanned_per_patient: number
-  match_rate_percent: number
-  top_matched_conditions: Array<[string, number]>
-  trials_enriched: number
-  avg_tavily_citations_per_trial: number
-}
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Activity, Users, FileText, TrendingUp } from "lucide-react"
+import { useQuery } from "@tanstack/react-query"
+import { Patient, Trial, TrialMatch, ProcessingMetric } from "@/entities"
 
 export function MetricsOverview() {
-  const [data, setData] = useState<MetricsData | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [agentModalOpen, setAgentModalOpen] = useState(false)
-  const [toolsModalOpen, setToolsModalOpen] = useState(false)
+  const { data: patients } = useQuery({
+    queryKey: ['patients'],
+    queryFn: () => Patient.list()
+  })
 
-  useEffect(() => {
-    const fetchDashboardMetrics = async () => {
-      try {
-        console.log('Fetching dashboard metrics...')
-        const response = await fetchMetrics({})
-        console.log('Metrics Response:', response)
-        
-        if (response.success && response.metrics) {
-          setData(response.metrics)
-        } else {
-          console.warn('Failed to fetch metrics:', response.error)
-        }
-      } catch (error) {
-        console.error('Error fetching dashboard metrics:', error)
-      } finally {
-        setLoading(false)
-      }
+  const { data: trials } = useQuery({
+    queryKey: ['trials'],
+    queryFn: () => Trial.list()
+  })
+
+  const { data: matches } = useQuery({
+    queryKey: ['trial-matches'],
+    queryFn: () => TrialMatch.list()
+  })
+
+  const { data: metrics } = useQuery({
+    queryKey: ['processing-metrics'],
+    queryFn: () => ProcessingMetric.list()
+  })
+
+  const totalPatients = patients?.length || 0
+  const totalTrials = trials?.length || 0
+  const totalMatches = matches?.length || 0
+  const avgResponseTime = metrics?.find(m => m.metric_type === 'api_response_time')?.value || 0
+
+  const metricCards = [
+    {
+      title: "Total Patients",
+      value: totalPatients,
+      icon: Users,
+      color: "text-blue-600",
+      bgColor: "bg-blue-50"
+    },
+    {
+      title: "Active Trials",
+      value: totalTrials,
+      icon: FileText,
+      color: "text-green-600",
+      bgColor: "bg-green-50"
+    },
+    {
+      title: "Successful Matches",
+      value: totalMatches,
+      icon: TrendingUp,
+      color: "text-purple-600",
+      bgColor: "bg-purple-50"
+    },
+    {
+      title: "Avg Response Time",
+      value: `${avgResponseTime.toFixed(1)}ms`,
+      icon: Activity,
+      color: "text-orange-600",
+      bgColor: "bg-orange-50"
     }
-
-    fetchDashboardMetrics()
-  }, [])
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600"></div>
-      </div>
-    )
-  }
-
-  if (!data) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-gray-500">Failed to load metrics data</p>
-      </div>
-    )
-  }
+  ]
 
   return (
-    <div className="space-y-8">
-      {/* Patient Metrics */}
-      <div className="animate-slide-up">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Patient Metrics</h2>
-          <p className="text-gray-600">Patient processing and scanning statistics</p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <MetricCard
-            title="Total Patients"
-            value={data.total_patients}
-            icon={Users}
-            subtitle="In database"
-          />
-          <MetricCard
-            title="Patients Scanned"
-            value={data.total_patients_scanned}
-            icon={Search}
-            subtitle="Processed for matching"
-          />
-          <MetricCard
-            title="Patients with Matches"
-            value={data.patients_with_match}
-            icon={Target}
-            subtitle="Successfully matched"
-          />
-        </div>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        {metricCards.map((metric, index) => (
+          <Card key={index} className="bg-white/80 backdrop-blur-sm border-white/20 shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600 truncate pr-2">
+                {metric.title}
+              </CardTitle>
+              <div className={`${metric.bgColor} p-2 rounded-lg`}>
+                <metric.icon className={`h-4 w-4 ${metric.color}`} />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className={`text-2xl sm:text-3xl font-bold ${metric.color}`}>
+                {metric.value}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
-      {/* Trial Metrics */}
-      <div className="animate-slide-up" style={{animationDelay: '0.1s'}}>
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Trial Metrics</h2>
-          <p className="text-gray-600">Clinical trial database and enrichment statistics</p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <MetricCard
-            title="Total Trials"
-            value={data.total_trials}
-            icon={FileText}
-            subtitle="Available trials"
-          />
-          <MetricCard
-            title="Trials Enriched"
-            value={data.trials_enriched}
-            icon={TrendingUp}
-            subtitle="Enhanced with AI"
-          />
-          <MetricCard
-            title="Avg Tavily Citations per Trial"
-            value={data.avg_tavily_citations_per_trial.toFixed(1)}
-            icon={FileText}
-            subtitle="Research Sources"
-          />
-        </div>
-      </div>
-
-      {/* System Metrics */}
-      <div className="animate-slide-up" style={{animationDelay: '0.15s'}}>
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">System Metrics</h2>
-          <p className="text-gray-600">AI agents and tools powering the platform</p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div 
-            className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-1 cursor-pointer"
-            onClick={() => setAgentModalOpen(true)}
-          >
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-blue-50 rounded-lg">
-                <Bot className="h-5 w-5 text-blue-600" />
+      <Card className="bg-white/80 backdrop-blur-sm border-white/20 shadow-lg">
+        <CardHeader>
+          <CardTitle className="text-lg sm:text-xl text-gray-800">System Overview</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg">
+              <div className="text-2xl sm:text-3xl font-bold text-blue-600 mb-2">
+                {((totalMatches / Math.max(totalPatients, 1)) * 100).toFixed(1)}%
               </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-gray-900 text-sm">Active Agents</h3>
-                <p className="text-xs text-gray-600">Click to view details</p>
-              </div>
+              <div className="text-sm text-gray-600">Match Success Rate</div>
             </div>
-            <div className="text-2xl font-bold text-gray-900">2</div>
-          </div>
-          
-          <div 
-            className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-1 cursor-pointer"
-            onClick={() => setToolsModalOpen(true)}
-          >
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-green-50 rounded-lg">
-                <Wrench className="h-5 w-5 text-green-600" />
+            <div className="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-lg">
+              <div className="text-2xl sm:text-3xl font-bold text-green-600 mb-2">
+                {trials?.filter(t => t.status === 'active').length || 0}
               </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-gray-900 text-sm">Available Tools</h3>
-                <p className="text-xs text-gray-600">Click to view details</p>
-              </div>
+              <div className="text-sm text-gray-600">Active Trials</div>
             </div>
-            <div className="text-2xl font-bold text-gray-900">4</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Matching Performance */}
-      <div className="animate-slide-up" style={{animationDelay: '0.2s'}}>
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Matching Performance</h2>
-          <p className="text-gray-600">Patient-trial matching efficiency and success rates</p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <MetricCard
-            title="Match Rate"
-            value={`${data.match_rate_percent.toFixed(1)}%`}
-            icon={Target}
-            subtitle="Success rate"
-          />
-          <MetricCard
-            title="Total Matched Trials"
-            value={data.total_matched_trials}
-            icon={Activity}
-            subtitle="Successful matches"
-          />
-          <MetricCard
-            title="Avg Trials per Patient"
-            value={data.avg_trials_scanned_per_patient.toFixed(1)}
-            icon={Search}
-            subtitle="Trials scanned"
-          />
-          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-blue-50 rounded-lg">
-                <TrendingUp className="h-5 w-5 text-blue-600" />
+            <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg sm:col-span-2 lg:col-span-1">
+              <div className="text-2xl sm:text-3xl font-bold text-purple-600 mb-2">
+                {patients?.filter(p => p.status === 'processed').length || 0}
               </div>
-              <div>
-                <h3 className="font-semibold text-gray-900">Top Conditions</h3>
-                <p className="text-sm text-gray-600">Most matched</p>
-              </div>
-            </div>
-            <div className="space-y-3">
-              {data.top_matched_conditions.map(([condition, count], index) => (
-                <div key={index} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
-                  <span className="text-sm text-gray-700 font-medium truncate">{condition}</span>
-                  <span className="text-sm font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-full">{count}</span>
-                </div>
-              ))}
+              <div className="text-sm text-gray-600">Processed Patients</div>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Modals */}
-      <AgentModal open={agentModalOpen} onOpenChange={setAgentModalOpen} />
-      <ToolsModal open={toolsModalOpen} onOpenChange={setToolsModalOpen} />
+        </CardContent>
+      </Card>
     </div>
   )
 }
