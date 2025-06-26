@@ -37,10 +37,32 @@ Deno.serve(async (req) => {
       throw new Error(`External API request failed: ${response.status} ${response.statusText}`)
     }
     
-    const patientData = await response.json()
-    console.log('Patient data received:', patientData)
+    const rawPatientData = await response.json()
+    console.log('Raw patient data received:', rawPatientData)
     
-    // Return with 'patient' field to match frontend expectation
+    // Transform the data to match the expected format
+    const patientData = {
+      id: rawPatientData.$id || rawPatientData.patient_id,
+      patient_id: rawPatientData.patient_id,
+      patient_name: rawPatientData.patient_name,
+      condition: rawPatientData.condition,
+      chemotherapy: Array.isArray(rawPatientData.chemotherapy) ? rawPatientData.chemotherapy : [rawPatientData.chemotherapy],
+      radiotherapy: Array.isArray(rawPatientData.radiotherapy) ? rawPatientData.radiotherapy : [rawPatientData.radiotherapy],
+      age: rawPatientData.age,
+      gender: Array.isArray(rawPatientData.gender) ? rawPatientData.gender : [rawPatientData.gender],
+      country: rawPatientData.country,
+      metastasis: Array.isArray(rawPatientData.metastasis) ? rawPatientData.metastasis : [rawPatientData.metastasis],
+      histology: rawPatientData.histology,
+      biomarker: rawPatientData.biomarker,
+      ecog_score: rawPatientData.ecog_score,
+      condition_recurrence: Array.isArray(rawPatientData.condition_recurrence) ? rawPatientData.condition_recurrence : [rawPatientData.condition_recurrence],
+      status: rawPatientData.status || 'active',
+      matched: rawPatientData.matched || false,
+      matched_trials_count: rawPatientData.matched_trials_count || 0
+    }
+    
+    console.log('Transformed patient data:', patientData)
+    
     return new Response(JSON.stringify({ 
       success: true, 
       patient: patientData
@@ -53,7 +75,7 @@ Deno.serve(async (req) => {
     console.error('Error in fetch-patient function:', error)
     return new Response(JSON.stringify({ 
       success: false, 
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error occurred'
     }), {
       status: 500,
       headers: { "Content-Type": "application/json" }
