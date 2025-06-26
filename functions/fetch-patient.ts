@@ -40,9 +40,10 @@ Deno.serve(async (req) => {
     const patientData = await response.json()
     console.log('Patient data received:', patientData)
     
+    // Return with 'patient' field to match frontend expectation
     return new Response(JSON.stringify({ 
       success: true, 
-      data: patientData
+      patient: patientData
     }), {
       status: 200,
       headers: { "Content-Type": "application/json" }
