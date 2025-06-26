@@ -91,14 +91,13 @@ const MatchTrials = () => {
 
     setIsSearching(true)
     setHasSearched(false)
-    setMatchingResults([]) // Clear previous results
 
     try {
       console.log('Calling match trials API for patient:', patientData.patient_id)
       
       const notificationTimer = setTimeout(() => {
         toast({
-          title: "✅ AI Processing Update",
+          title: "✅ AI Processing Update",
           description: (
             <div className="text-sm">
               Trials fetched, triggering <strong className="font-semibold text-green-700">AI-driven eligibility matching</strong>.
@@ -108,6 +107,7 @@ const MatchTrials = () => {
           className: "bg-green-50 border border-green-300 text-green-800", // green toast styling
         })
       }, 15000)
+
 
       const matchResponse = await matchTrials({ patient_id: patientData.patient_id })
       console.log('Match trials response:', matchResponse)
@@ -121,28 +121,9 @@ const MatchTrials = () => {
         // Call trial_info API after matchtrials completes
         const trialInfoResponse = await trialInfo({ patient_id: patientData.patient_id })
         console.log('Trial info response:', trialInfoResponse)
-        console.log('Trial info response trials:', trialInfoResponse.trials)
         
-        if (trialInfoResponse.success) {
-          // Handle different possible response formats
-          let trials = []
-          
-          if (Array.isArray(trialInfoResponse.trials)) {
-            trials = trialInfoResponse.trials
-          } else if (Array.isArray(trialInfoResponse)) {
-            trials = trialInfoResponse
-          } else if (trialInfoResponse.trials && typeof trialInfoResponse.trials === 'object') {
-            // If trials is an object, try to extract array from it
-            trials = Object.values(trialInfoResponse.trials)
-          } else {
-            console.log('Unexpected trial info response format:', trialInfoResponse)
-            trials = []
-          }
-          
-          console.log('Processed trials array:', trials)
-          console.log('Number of trials found:', trials.length)
-          
-          setMatchingResults(trials)
+        if (trialInfoResponse.success && trialInfoResponse.trials) {
+          setMatchingResults(trialInfoResponse.trials)
         } else {
           console.error('Trial info API error:', trialInfoResponse)
           setMatchingResults([])
@@ -444,9 +425,6 @@ const MatchTrials = () => {
                     </div>
                     <h3 className="text-xl font-semibold mb-2 text-gray-900">No matching trials found</h3>
                     <p className="text-gray-500">No clinical trials match this patient's criteria.</p>
-                    <div className="mt-4 text-sm text-gray-600 bg-yellow-50 px-4 py-3 rounded-lg inline-block">
-                      <strong>Debug Info:</strong> Check browser console for API response details
-                    </div>
                   </div>
                 )
               )
