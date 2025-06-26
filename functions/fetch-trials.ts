@@ -31,8 +31,7 @@ Deno.serve(async (req) => {
       console.error('Unexpected API response structure:', data)
       return new Response(JSON.stringify({ 
         success: false, 
-        error: 'Unexpected API response structure',
-        data: null
+        error: 'Unexpected API response structure'
       }), {
         status: 500,
         headers: { "Content-Type": "application/json" }
@@ -41,10 +40,12 @@ Deno.serve(async (req) => {
     
     console.log('Processed trials count:', trialsArray.length)
     
+    // Return in the format expected by the UI
     return new Response(JSON.stringify({ 
       success: true, 
-      trials: trialsArray,
-      count: trialsArray.length
+      data: {
+        trials: trialsArray
+      }
     }), {
       status: 200,
       headers: { "Content-Type": "application/json" }
@@ -54,8 +55,7 @@ Deno.serve(async (req) => {
     console.error('Error in fetch-trials function:', error)
     return new Response(JSON.stringify({ 
       success: false, 
-      error: error instanceof Error ? error.message : 'Unknown error',
-      trials: []
+      error: error instanceof Error ? error.message : 'Unknown error'
     }), {
       status: 500,
       headers: { "Content-Type": "application/json" }
