@@ -7,20 +7,20 @@ const superdev = createSuperdevClient({
 Deno.serve(async (req) => {
   try {
     // Get authorization header from request
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response('Unauthorized', { status: 401 });
-    }
+    // const authHeader = req.headers.get('Authorization');
+    // if (!authHeader) {
+    //   return new Response('Unauthorized', { status: 401 });
+    // }
     
-    // Extract token and set it for superdev client
-    const token = authHeader.split(' ')[1];
-    superdev.auth.setToken(token);
+    // // Extract token and set it for superdev client
+    // const token = authHeader.split(' ')[1];
+    // superdev.auth.setToken(token);
     
-    // Verify user is authenticated
-    const user = await superdev.auth.me();
-    if (!user) {
-      return new Response('Unauthorized', { status: 401 });
-    }
+    // // Verify user is authenticated
+    // const user = await superdev.auth.me();
+    // if (!user) {
+    //   return new Response('Unauthorized', { status: 401 });
+    // }
 
     const { patientId } = await req.json();
     
