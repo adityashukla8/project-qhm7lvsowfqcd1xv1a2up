@@ -4,7 +4,7 @@ Deno.serve(async (req) => {
     const { patient_id } = body;
     const baseUrl = "https://clinicaltrials-multiagent-502131642989.asia-south1.run.app";
     
-    console.log('Matching trials for patient:', { patient_id });
+    console.log('Starting match trials for patient:', { patient_id });
     
     if (!patient_id || !patient_id.trim()) {
       return new Response(JSON.stringify({
@@ -42,11 +42,12 @@ Deno.serve(async (req) => {
     }
     
     const matchResults = await response.json();
-    console.log('Match results received:', matchResults);
+    console.log('Match trials results received:', matchResults);
     
     return new Response(JSON.stringify({
       success: true,
-      matches: matchResults
+      message: "Trials matched successfully",
+      data: matchResults
     }), {
       status: 200,
       headers: { "Content-Type": "application/json" }
