@@ -99,7 +99,7 @@ const ProtocolOptimization = () => {
 
   const getScoreColor = (score: number) => {
     if (score >= 20) return 'bg-green-100 text-green-800 border-green-200'
-    if (score >= 10) return 'bg-yellow-100 text-yellow-800 border-yellow-200'
+    if (score > 0) return 'bg-yellow-100 text-yellow-800 border-yellow-200'
     return 'bg-red-100 text-red-800 border-red-200'
   }
 
@@ -114,13 +114,13 @@ const ProtocolOptimization = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50">
-        <div className="bg-purple-600">
+        <div className="bg-blue-600">
           <header className="px-4 sm:px-6 py-6 sm:py-8">
             <div className="flex items-center gap-4">
               <SidebarTrigger className="text-white hover:bg-white/20" />
               <div>
                 <h1 className="text-2xl sm:text-3xl font-bold text-white">Protocol Optimization</h1>
-                <p className="text-purple-100 text-base sm:text-lg">Optimize clinical trial protocols for better patient eligibility</p>
+                <p className="text-blue-100 text-base sm:text-lg">Optimize clinical trial protocols for better patient eligibility</p>
               </div>
             </div>
           </header>
@@ -131,7 +131,7 @@ const ProtocolOptimization = () => {
             <CardContent className="p-8">
               <div className="flex items-center justify-center py-12">
                 <div className="text-center">
-                  <Loader2 className="w-12 h-12 animate-spin text-purple-600 mx-auto mb-4" />
+                  <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
                   <p className="text-gray-600 text-lg">Loading protocol optimization data...</p>
                 </div>
               </div>
@@ -145,13 +145,13 @@ const ProtocolOptimization = () => {
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50">
-        <div className="bg-purple-600">
+        <div className="bg-blue-600">
           <header className="px-4 sm:px-6 py-6 sm:py-8">
             <div className="flex items-center gap-4">
               <SidebarTrigger className="text-white hover:bg-white/20" />
               <div>
                 <h1 className="text-2xl sm:text-3xl font-bold text-white">Protocol Optimization</h1>
-                <p className="text-purple-100 text-base sm:text-lg">Optimize clinical trial protocols for better patient eligibility</p>
+                <p className="text-blue-100 text-base sm:text-lg">Optimize clinical trial protocols for better patient eligibility</p>
               </div>
             </div>
           </header>
@@ -165,7 +165,7 @@ const ProtocolOptimization = () => {
                   <AlertCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
                   <h3 className="text-xl font-semibold mb-2 text-gray-900">Error Loading Data</h3>
                   <p className="text-gray-600 mb-4">{error}</p>
-                  <Button onClick={fetchProtocolData} className="bg-purple-600 hover:bg-purple-700">
+                  <Button onClick={fetchProtocolData} className="bg-blue-600 hover:bg-blue-700">
                     Try Again
                   </Button>
                 </div>
@@ -179,13 +179,13 @@ const ProtocolOptimization = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50">
-      <div className="bg-purple-600">
+      <div className="bg-blue-600">
         <header className="px-4 sm:px-6 py-6 sm:py-8">
           <div className="flex items-center gap-4">
             <SidebarTrigger className="text-white hover:bg-white/20" />
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-white">Protocol Optimization</h1>
-              <p className="text-purple-100 text-base sm:text-lg">Optimize clinical trial protocols for better patient eligibility</p>
+              <p className="text-blue-100 text-base sm:text-lg">Optimize clinical trial protocols for better patient eligibility</p>
             </div>
           </div>
         </header>
@@ -198,8 +198,8 @@ const ProtocolOptimization = () => {
             <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm rounded-2xl">
               <CardContent className="p-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
-                    <FileText className="w-5 h-5 text-purple-600" />
+                  <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                    <FileText className="w-5 h-5 text-blue-600" />
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-gray-900">{protocols.length}</p>
@@ -244,7 +244,7 @@ const ProtocolOptimization = () => {
 
           {/* Protocols List */}
           <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm rounded-2xl overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-purple-50 to-indigo-50 border-b border-purple-100">
+            <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100">
               <CardTitle className="text-lg sm:text-xl">Protocol Optimization Results</CardTitle>
             </CardHeader>
             <CardContent className="p-0">
