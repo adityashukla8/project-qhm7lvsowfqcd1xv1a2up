@@ -119,7 +119,7 @@ const ProtocolOptimization = () => {
   }
 
   const handleImageClick = () => {
-    window.open('https://github.com/adityashukla8/clinicaltrials-multiagent', '_blank', 'noopener,noreferrer')
+    window.open('https://github.com/adityashukla8/clinicaltrials-multiagent/blob/master/assets/Clinical%20Trial%20Protocol%20Optimization%20Workflow.png', '_blank', 'noopener,noreferrer')
   }
 
   if (isLoading) {
