@@ -50,10 +50,10 @@ export function AppSidebar() {
   const location = useLocation()
 
   return (
-    <Sidebar>
-      <SidebarContent>
+    <Sidebar className="bg-white border-r border-gray-200">
+      <SidebarContent className="bg-white">
         <SidebarGroup>
-          <SidebarGroupLabel>Criteria-AI</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-gray-900 font-semibold">Criteria-AI</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
