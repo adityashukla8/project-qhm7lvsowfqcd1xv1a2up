@@ -11,6 +11,7 @@ import { fetchPatients, matchTrials, trialInfo } from '@/functions'
 import EligibilityText from '@/components/EligibilityText'
 import { useToast } from "@/hooks/use-toast"
 import WorkflowModal from '@/components/WorkflowModal'
+import WorkflowImageSection from '@/components/WorkflowImageSection'
 
 interface PatientData {
   id: string
@@ -236,6 +237,9 @@ const MatchTrials = () => {
               )}
             </CardContent>
           </Card>
+
+          {/* Workflow Diagram Section */}
+          <WorkflowImageSection />
 
           {/* Patient Details */}
           {patientData && (
