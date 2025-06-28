@@ -1,12 +1,9 @@
 Deno.serve(async (req) => {
   try {
-    const body = await req.json().catch(() => ({}));
+    const body = await req.json();
     const { patient_id } = body;
-    const baseUrl = "https://clinicaltrials-multiagent-502131642989.asia-south1.run.app";
-    
-    console.log('Getting trial info for patient:', { patient_id });
-    
-    if (!patient_id || !patient_id.trim()) {
+
+    if (!patient_id) {
       return new Response(JSON.stringify({
         success: false,
         error: "Patient ID is required"
@@ -15,49 +12,45 @@ Deno.serve(async (req) => {
         headers: { "Content-Type": "application/json" }
       });
     }
-    
-    // Call the /trial_info endpoint
-    console.log(`Calling /trial_info endpoint for patient: ${patient_id}`);
-    const response = await fetch(`${baseUrl}/trial_info`, {
-      method: 'POST',
+
+    console.log(`Fetching trial info for patient: ${patient_id}`);
+
+    const apiUrl = "https://clinicaltrials-multiagent-502131642989.asia-south1.run.app/trial_info";
+
+    const response = await fetch(apiUrl, {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json"
       },
-      body: JSON.stringify({ patient_id: patient_id.trim() })
+      body: JSON.stringify({ patient_id })
     });
-    
+
     if (!response.ok) {
-      console.error(`Failed to get trial info: ${response.status} ${response.statusText}`);
-      const errorText = await response.text();
-      console.error('Error response:', errorText);
-      
+      console.error("Backend /trial_info error:", await response.text());
       return new Response(JSON.stringify({
         success: false,
-        error: `Failed to get trial info: ${response.status} ${response.statusText}`,
-        details: errorText
+        error: `Failed to fetch from /trial_info: ${response.status} ${response.statusText}`
       }), {
         status: 500,
         headers: { "Content-Type": "application/json" }
       });
     }
-    
-    const trialResults = await response.json();
-    console.log('Trial info results received:', trialResults);
-    
-    // Ensure we return the trials in the expected format
+
+    const data = await response.json();
+
     return new Response(JSON.stringify({
       success: true,
-      trials: trialResults.trials || trialResults || []
+      trials: data.trials || []
     }), {
       status: 200,
       headers: { "Content-Type": "application/json" }
     });
-    
+
   } catch (error) {
-    console.error('Error in trial-info function:', error);
+    console.error("Error in Superdev trial_info function:", error);
     return new Response(JSON.stringify({
       success: false,
-      error: error.message
+      error: error.message || "Internal server error"
     }), {
       status: 500,
       headers: { "Content-Type": "application/json" }
