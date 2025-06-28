@@ -25,6 +25,10 @@ const usePageTitle = () => {
           if (pathname.startsWith('/trials/')) {
             return `${baseTitle} - Trial Details`
           }
+          if (pathname.startsWith('/protocol-optimization/')) {
+            const trialId = pathname.split('/')[2]
+            return `${baseTitle} - ${trialId} Protocol Optimization`
+          }
           return baseTitle
       }
     }

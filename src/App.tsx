@@ -13,6 +13,7 @@ import Trials from "./pages/Trials";
 import TrialDetail from "./pages/TrialDetail";
 import PatientInfo from "./pages/PatientInfo";
 import ProtocolOptimization from "./pages/ProtocolOptimization";
+import ProtocolOptimizationDetail from "./pages/ProtocolOptimizationDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +34,7 @@ const AppContent = () => {
             <Route path="/trials/:id" element={<TrialDetail />} />
             <Route path="/patient-info" element={<PatientInfo />} />
             <Route path="/protocol-optimization" element={<ProtocolOptimization />} />
+            <Route path="/protocol-optimization/:id" element={<ProtocolOptimizationDetail />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

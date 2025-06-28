@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Separator } from "@/components/ui/separator"
 import { FileText, TrendingUp, Users, Calendar, ChevronRight, Loader2, AlertCircle } from "lucide-react"
 import { fetchProtocols } from '@/functions'
 
@@ -45,7 +43,6 @@ const ProtocolOptimization = () => {
   const [protocols, setProtocols] = useState<ProtocolData[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [selectedProtocol, setSelectedProtocol] = useState<ProtocolData | null>(null)
 
   useEffect(() => {
     fetchProtocolData()
@@ -248,139 +245,48 @@ const ProtocolOptimization = () => {
                   
                   return (
                     <div key={protocol.trial_id} className="border-b border-gray-100 last:border-b-0">
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <div className="p-6 hover:bg-gray-50 cursor-pointer transition-colors">
-                            <div className="flex items-center justify-between">
-                              <div className="flex-1">
-                                <div className="flex items-center gap-3 mb-3">
-                                  <h3 className="text-lg font-semibold text-gray-900">{protocol.trial_id}</h3>
-                                  <Badge className={`${getScoreColor(optimizationScore)} border font-medium px-3 py-1`}>
-                                    {optimizationScore.toFixed(1)}% Potential Gain
-                                  </Badge>
-                                </div>
-                                
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-3">
-                                  <div className="flex items-center gap-2">
-                                    <Users className="w-4 h-4 text-gray-500" />
-                                    <span className="text-sm text-gray-600">
-                                      {protocol.age_optimization_result.quantitative.eligible_patients} eligible patients
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <TrendingUp className="w-4 h-4 text-gray-500" />
-                                    <span className="text-sm text-gray-600">
-                                      Age: {protocol.age_optimization_result.llm_insight.eligibility_gain_estimate}
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <Calendar className="w-4 h-4 text-gray-500" />
-                                    <span className="text-sm text-gray-600">
-                                      {formatDate(protocol.created_at)}
-                                    </span>
-                                  </div>
-                                </div>
-                                
-                                <p className="text-sm text-gray-600 line-clamp-2">
-                                  {parseSummary(protocol.summary)[0]}
-                                </p>
-                              </div>
-                              
-                              <ChevronRight className="w-5 h-5 text-gray-400 ml-4" />
+                      <Link 
+                        to={`/protocol-optimization/${protocol.trial_id}`}
+                        className="block p-6 hover:bg-gray-50 transition-colors"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-3">
+                              <h3 className="text-lg font-semibold text-gray-900">{protocol.trial_id}</h3>
+                              <Badge className={`${getScoreColor(optimizationScore)} border font-medium px-3 py-1`}>
+                                {optimizationScore.toFixed(1)}% Potential Gain
+                              </Badge>
                             </div>
+                            
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-3">
+                              <div className="flex items-center gap-2">
+                                <Users className="w-4 h-4 text-gray-500" />
+                                <span className="text-sm text-gray-600">
+                                  {protocol.age_optimization_result.quantitative.eligible_patients} eligible patients
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <TrendingUp className="w-4 h-4 text-gray-500" />
+                                <span className="text-sm text-gray-600">
+                                  Age: {protocol.age_optimization_result.llm_insight.eligibility_gain_estimate}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Calendar className="w-4 h-4 text-gray-500" />
+                                <span className="text-sm text-gray-600">
+                                  {formatDate(protocol.created_at)}
+                                </span>
+                              </div>
+                            </div>
+                            
+                            <p className="text-sm text-gray-600 line-clamp-2">
+                              {parseSummary(protocol.summary)[0]}
+                            </p>
                           </div>
-                        </DialogTrigger>
-                        
-                        <DialogContent className="max-w-4xl max-h-[80vh]">
-                          <DialogHeader>
-                            <DialogTitle className="text-xl font-bold">{protocol.trial_id} - Optimization Details</DialogTitle>
-                          </DialogHeader>
                           
-                          <ScrollArea className="max-h-[60vh] pr-4">
-                            <div className="space-y-6">
-                              {/* Summary */}
-                              <div>
-                                <h3 className="text-lg font-semibold mb-3">Summary</h3>
-                                <div className="space-y-2">
-                                  {parseSummary(protocol.summary).map((item, idx) => (
-                                    <p key={idx} className="text-sm text-gray-700 bg-gray-50 p-3 rounded-lg">
-                                      {item}
-                                    </p>
-                                  ))}
-                                </div>
-                              </div>
-                              
-                              <Separator />
-                              
-                              {/* Age Optimization */}
-                              <div>
-                                <h3 className="text-lg font-semibold mb-3">Age Optimization</h3>
-                                <div className="grid grid-cols-2 gap-4 mb-4">
-                                  <div className="bg-blue-50 p-4 rounded-lg">
-                                    <p className="text-sm font-medium text-blue-900">Current Range</p>
-                                    <p className="text-lg font-bold text-blue-700">
-                                      {protocol.age_optimization_result.quantitative.current_range}
-                                    </p>
-                                  </div>
-                                  <div className="bg-green-50 p-4 rounded-lg">
-                                    <p className="text-sm font-medium text-green-900">Suggested Range</p>
-                                    <p className="text-lg font-bold text-green-700">
-                                      {protocol.age_optimization_result.quantitative.suggested_range}
-                                    </p>
-                                  </div>
-                                </div>
-                                <div className="space-y-3">
-                                  <div className="bg-gray-50 p-4 rounded-lg">
-                                    <p className="text-sm font-medium text-gray-900 mb-2">Clinical Recommendation</p>
-                                    <p className="text-sm text-gray-700">
-                                      {protocol.age_optimization_result.llm_insight.clinical_recommendation}
-                                    </p>
-                                  </div>
-                                  <div className="bg-gray-50 p-4 rounded-lg">
-                                    <p className="text-sm font-medium text-gray-900 mb-2">Summary</p>
-                                    <p className="text-sm text-gray-700">
-                                      {protocol.age_optimization_result.llm_insight.summary}
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-                              
-                              <Separator />
-                              
-                              {/* Biomarker Optimization */}
-                              <div>
-                                <h3 className="text-lg font-semibold mb-3">Biomarker Optimization</h3>
-                                <div className="space-y-4">
-                                  <div className="bg-yellow-50 p-4 rounded-lg">
-                                    <p className="text-sm font-medium text-yellow-900 mb-2">Estimated Gain</p>
-                                    <p className="text-lg font-bold text-yellow-700">
-                                      {protocol.biomarker_optimization_result.gain_estimate.split('\n')[0]}
-                                    </p>
-                                  </div>
-                                  <div className="bg-gray-50 p-4 rounded-lg">
-                                    <p className="text-sm font-medium text-gray-900 mb-2">Summary</p>
-                                    <p className="text-sm text-gray-700">
-                                      {protocol.biomarker_optimization_result.summary}
-                                    </p>
-                                  </div>
-                                  <div className="bg-gray-50 p-4 rounded-lg">
-                                    <p className="text-sm font-medium text-gray-900 mb-2">Clinical Note</p>
-                                    <p className="text-sm text-gray-700">
-                                      {protocol.biomarker_optimization_result.clinical_note}
-                                    </p>
-                                  </div>
-                                  <div className="bg-gray-50 p-4 rounded-lg">
-                                    <p className="text-sm font-medium text-gray-900 mb-2">Suggested Biomarker Criteria</p>
-                                    <pre className="text-xs text-gray-700 whitespace-pre-wrap">
-                                      {protocol.biomarker_optimization_result.suggested_biomarker_criteria}
-                                    </pre>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </ScrollArea>
-                        </DialogContent>
-                      </Dialog>
+                          <ChevronRight className="w-5 h-5 text-gray-400 ml-4" />
+                        </div>
+                      </Link>
                     </div>
                   )
                 })}
