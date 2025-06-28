@@ -1,6 +1,6 @@
 import { superdevClient } from "@/lib/superdev/client";
 
-export const fetchProtocolDetail = superdevClient.functions.fetchProtocolDetail;
+export const fetchProtocols = superdevClient.functions.fetchProtocols;
 export const getWorkflowStatus = superdevClient.functions.getWorkflowStatus;
 export const runAgenticWorkflow = superdevClient.functions.runAgenticWorkflow;
 export const appwriteSync = superdevClient.functions.appwriteSync;
@@ -13,4 +13,4 @@ export const fetchTrials = superdevClient.functions.fetchTrials;
 export const fetchMetrics = superdevClient.functions.fetchMetrics;
 export const copilotkit = superdevClient.functions.copilotkit;
 export const fetchPatient = superdevClient.functions.fetchPatient;
-export const fetchProtocols = superdevClient.functions.fetchProtocols;
+export const fetchProtocolDetail = superdevClient.functions.fetchProtocolDetail;

@@ -1,8 +1,9 @@
 Deno.serve(async (req) => {
   try {
-    const baseUrl = 'https://clinicaltrials-multiagent-502131642989.asia-south1.run.app/search-protocols/all';
+    const baseUrl = 'https://clinicaltrials-multiagent-502131642989.asia-south1.run.app/search-protocols';
     
-    console.log('Fetching protocols from:', baseUrl);
+    console.log('Fetching all protocol optimizations...');
+    console.log('API URL:', baseUrl);
     
     const response = await fetch(baseUrl, {
       method: 'GET',
@@ -12,7 +13,14 @@ Deno.serve(async (req) => {
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      console.error(`HTTP error! status: ${response.status}`);
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: `HTTP error! status: ${response.status}` 
+      }), {
+        status: response.status,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     const data = await response.json();
