@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Search, MapPin, Users, Calendar, ExternalLink, Globe, FileText } from "lucide-react"
+import { Search, MapPin, Users, Calendar, ExternalLink, Globe, FileText, Settings } from "lucide-react"
 import { Link } from 'react-router-dom'
 import { fetchTrials } from '@/functions'
+import { optimizeProtocol } from '@/functions'
 import EligibilityText from '@/components/EligibilityText'
+import { useToast } from "@/hooks/use-toast"
 
 interface TrialData {
   trial_id: string
@@ -37,11 +40,14 @@ interface TrialData {
 }
 
 const Trials = () => {
+  const navigate = useNavigate()
+  const { toast } = useToast()
   const [trials, setTrials] = useState<TrialData[]>([])
   const [filteredTrials, setFilteredTrials] = useState<TrialData[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [optimizingTrials, setOptimizingTrials] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     const loadTrials = async () => {
@@ -128,6 +134,44 @@ const Trials = () => {
       case 'active': return 'bg-blue-100 text-blue-700 border-blue-200'
       case 'completed': return 'bg-gray-100 text-gray-700 border-gray-200'
       default: return 'bg-gray-100 text-gray-700 border-gray-200'
+    }
+  }
+
+  const handleOptimizeProtocol = async (trialId: string) => {
+    setOptimizingTrials(prev => new Set(prev).add(trialId))
+    
+    try {
+      console.log('Starting protocol optimization for trial:', trialId)
+      const response = await optimizeProtocol({ trial_id: trialId })
+      
+      if (response.success) {
+        toast({
+          title: "Protocol Optimization Started",
+          description: "Redirecting to Protocol Optimization page...",
+        })
+        
+        // Navigate to protocol optimization page
+        navigate('/protocol-optimization')
+      } else {
+        toast({
+          title: "Optimization Failed",
+          description: response.error || "Failed to start protocol optimization",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error('Error optimizing protocol:', error)
+      toast({
+        title: "Optimization Failed",
+        description: "An error occurred while starting protocol optimization",
+        variant: "destructive",
+      })
+    } finally {
+      setOptimizingTrials(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(trialId)
+        return newSet
+      })
     }
   }
 
@@ -226,6 +270,7 @@ const Trials = () => {
             {Array.isArray(filteredTrials) && filteredTrials.map((trial, index) => {
               const phase = extractPhase(trial)
               const status = extractStatus(trial)
+              const isOptimizing = optimizingTrials.has(trial.trial_id)
               
               return (
                 <Card key={trial.trial_id} className="card-hover border-0 shadow-lg bg-white/80 backdrop-blur-sm rounded-2xl overflow-hidden animate-slide-up" style={{animationDelay: `${index * 0.1}s`}}>
@@ -247,12 +292,22 @@ const Trials = () => {
                           </Badge>
                         </div>
                       </div>
-                      <Link to={`/trials/${trial.trial_id}`}>
-                        <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 rounded-xl px-4 sm:px-6 h-10 sm:h-11 shadow-lg w-full sm:w-auto">
-                          <ExternalLink className="w-4 h-4 mr-2" />
-                          View Details
+                      <div className="flex flex-col gap-2">
+                        <Link to={`/trials/${trial.trial_id}`}>
+                          <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 rounded-xl px-4 sm:px-6 h-10 sm:h-11 shadow-lg w-full sm:w-auto">
+                            <ExternalLink className="w-4 h-4 mr-2" />
+                            View Details
+                          </Button>
+                        </Link>
+                        <Button 
+                          onClick={() => handleOptimizeProtocol(trial.trial_id)}
+                          disabled={isOptimizing}
+                          className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white border-0 rounded-xl px-4 sm:px-6 h-10 sm:h-11 shadow-lg w-full sm:w-auto"
+                        >
+                          <Settings className="w-4 h-4 mr-2" />
+                          {isOptimizing ? 'Optimizing...' : 'Optimize Protocol'}
                         </Button>
-                      </Link>
+                      </div>
                     </div>
                   </CardHeader>
                   <CardContent>

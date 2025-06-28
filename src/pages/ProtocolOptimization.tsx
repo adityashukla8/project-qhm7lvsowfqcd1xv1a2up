@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -40,6 +40,7 @@ interface ProtocolData {
 }
 
 const ProtocolOptimization = () => {
+  const location = useLocation()
   const [protocols, setProtocols] = useState<ProtocolData[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -47,6 +48,11 @@ const ProtocolOptimization = () => {
   useEffect(() => {
     fetchProtocolData()
   }, [])
+
+  // Refresh data when navigating to this page (e.g., from optimize protocol button)
+  useEffect(() => {
+    fetchProtocolData()
+  }, [location.pathname])
 
   const fetchProtocolData = async () => {
     setIsLoading(true)
