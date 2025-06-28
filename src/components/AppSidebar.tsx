@@ -1,4 +1,4 @@
-import { Home, Search, FileText, Users, Info, Activity } from "lucide-react"
+import { Calendar, Home, Search, FileText, Users, Settings, TrendingUp } from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
 
 import {
@@ -10,11 +10,9 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarHeader,
-  SidebarFooter,
 } from "@/components/ui/sidebar"
 
-// Menu items without Protocol Optimization
+// Menu items.
 const items = [
   {
     title: "Dashboard",
@@ -27,19 +25,24 @@ const items = [
     icon: Search,
   },
   {
-    title: "Trials",
+    title: "Clinical Trials",
     url: "/trials",
     icon: FileText,
   },
   {
-    title: "Patient Info",
+    title: "Patient Information",
     url: "/patient-info",
     icon: Users,
   },
   {
+    title: "Protocol Optimization",
+    url: "/protocol-optimization",
+    icon: TrendingUp,
+  },
+  {
     title: "About",
     url: "/about",
-    icon: Info,
+    icon: Settings,
   },
 ]
 
@@ -48,19 +51,9 @@ export function AppSidebar() {
 
   return (
     <Sidebar>
-      <SidebarHeader className="border-b border-sidebar-border p-4">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg flex items-center justify-center">
-            <Activity className="w-4 h-4 text-white" />
-          </div>
-          <div>
-            <h2 className="text-lg font-bold text-sidebar-foreground">Criteria-AI</h2>
-          </div>
-        </div>
-      </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel>Criteria-AI</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
@@ -77,9 +70,6 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="p-4 border-t border-sidebar-border">
-        <p className="text-xs text-sidebar-foreground/70 text-center">AI-Driven Clinical Trials Matching System</p>
-      </SidebarFooter>
     </Sidebar>
   )
 }

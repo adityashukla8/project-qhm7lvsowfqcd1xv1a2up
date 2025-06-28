@@ -19,6 +19,8 @@ const usePageTitle = () => {
           return `${baseTitle} - Clinical Trials`
         case '/patient-info':
           return `${baseTitle} - Patient Information`
+        case '/protocol-optimization':
+          return `${baseTitle} - Protocol Optimization`
         default:
           if (pathname.startsWith('/trials/')) {
             return `${baseTitle} - Trial Details`
