@@ -1,316 +1,231 @@
 import { useState, useEffect } from 'react'
-import { Link, useLocation } from 'react-router-dom'
-import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { FileText, TrendingUp, Users, Calendar, ChevronRight, Loader2, AlertCircle } from "lucide-react"
-import { fetchProtocols } from '@/functions'
+import { Input } from "@/components/ui/input"
+import { useToast } from "@/hooks/use-toast"
+import { Search, FileText, Clock, CheckCircle, AlertCircle, Eye, Zap } from "lucide-react"
+import { useNavigate } from "react-router-dom"
+import ProtocolOptimizationWorkflowSection from "@/components/ProtocolOptimizationWorkflowSection"
 
-interface ProtocolData {
+interface ProtocolOptimization {
+  id: string
   trial_id: string
-  summary: string
-  age_optimization_result: {
-    quantitative: {
-      eligible_patients: number
-      missed_patients: number
-      missed_due_to_upper_limit: number
-      missed_due_to_lower_limit: number
-      suggested_upper_bound: number | null
-      suggested_lower_bound: number | null
-      current_range: string
-      suggested_range: string
-      total_patients: number
-    }
-    llm_insight: {
-      summary: string
-      clinical_recommendation: string
-      revised_age_range: string
-      eligibility_gain_estimate: string
-      note: string
-    }
-  }
-  biomarker_optimization_result: {
-    summary: string
-    suggested_biomarker_criteria: string
-    gain_estimate: string
-    clinical_note: string
-  }
+  title: string
+  status: 'pending' | 'processing' | 'completed' | 'failed'
   created_at: string
+  age_eligibility_insights?: string
+  biomarker_eligibility_insights?: string
+  confidence_score?: number
 }
 
 const ProtocolOptimization = () => {
-  const location = useLocation()
-  const [protocols, setProtocols] = useState<ProtocolData[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [optimizations, setOptimizations] = useState<ProtocolOptimization[]>([])
+  const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
+  const { toast } = useToast()
+  const navigate = useNavigate()
 
   useEffect(() => {
-    fetchProtocolData()
+    fetchOptimizations()
   }, [])
 
-  // Refresh data when navigating to this page (e.g., from optimize protocol button)
-  useEffect(() => {
-    fetchProtocolData()
-  }, [location.pathname])
-
-  const fetchProtocolData = async () => {
-    setIsLoading(true)
-    setError(null)
-    
+  const fetchOptimizations = async () => {
     try {
-      console.log('Fetching protocol optimization data...')
-      const response = await fetchProtocols({})
-      console.log('Protocol response:', response)
+      setLoading(true)
+      const response = await fetch('https://clinicaltrials-multiagent-502131642989.asia-south1.run.app/search-protocols')
       
-      if (response.success && response.data) {
-        setProtocols(response.data)
-      } else {
-        setError(response.error || 'Failed to fetch protocol data')
+      if (!response.ok) {
+        throw new Error('Failed to fetch protocol optimizations')
       }
-    } catch (err) {
-      console.error('Error fetching protocols:', err)
-      setError(err instanceof Error ? err.message : 'Unknown error occurred')
+      
+      const data = await response.json()
+      console.log('Protocol optimizations data:', data)
+      
+      // Transform the data to match our interface
+      const transformedData = data.map((item: any) => ({
+        id: item.trial_id || item.id,
+        trial_id: item.trial_id || item.id,
+        title: item.title || `Protocol Optimization ${item.trial_id || item.id}`,
+        status: item.status || 'completed',
+        created_at: item.created_at || new Date().toISOString(),
+        age_eligibility_insights: item.age_eligibility_insights,
+        biomarker_eligibility_insights: item.biomarker_eligibility_insights,
+        confidence_score: item.confidence_score
+      }))
+      
+      setOptimizations(transformedData)
+    } catch (error) {
+      console.error('Error fetching protocol optimizations:', error)
+      toast({
+        title: "Error",
+        description: "Failed to fetch protocol optimizations. Please try again.",
+        variant: "destructive",
+      })
     } finally {
-      setIsLoading(false)
+      setLoading(false)
     }
   }
 
-  const parseSummary = (summaryString: string) => {
-    try {
-      // The summary appears to be a stringified array
-      const parsed = JSON.parse(summaryString)
-      if (Array.isArray(parsed)) {
-        // Clean up the text by removing markdown formatting and brackets
-        return parsed.map(item => 
-          item.replace(/\*\*/g, '')
-            .replace(/\*/g, '')
-            .replace(/\[|\]/g, '')
-            .trim()
-        ).filter(item => item.length > 0)
-      }
-      return [summaryString.replace(/\*\*/g, '').replace(/\*/g, '').replace(/\[|\]/g, '').trim()]
-    } catch {
-      return [summaryString.replace(/\*\*/g, '').replace(/\*/g, '').replace(/\[|\]/g, '').trim()]
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return <CheckCircle className="w-4 h-4 text-green-600" />
+      case 'processing':
+        return <Clock className="w-4 h-4 text-blue-600" />
+      case 'failed':
+        return <AlertCircle className="w-4 h-4 text-red-600" />
+      default:
+        return <Clock className="w-4 h-4 text-gray-600" />
     }
   }
 
-  const getOptimizationScore = (protocol: ProtocolData) => {
-    const ageGain = parseFloat(protocol.age_optimization_result.llm_insight.eligibility_gain_estimate.replace('%', '')) || 0
-    const biomarkerGain = protocol.biomarker_optimization_result.gain_estimate.match(/(\d+)-(\d+)%/)
-    const avgBiomarkerGain = biomarkerGain ? (parseInt(biomarkerGain[1]) + parseInt(biomarkerGain[2])) / 2 : 0
-    
-    return ageGain + avgBiomarkerGain
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return 'bg-green-100 text-green-800 border-green-200'
+      case 'processing':
+        return 'bg-blue-100 text-blue-800 border-blue-200'
+      case 'failed':
+        return 'bg-red-100 text-red-800 border-red-200'
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200'
+    }
   }
 
-  const getScoreColor = (score: number) => {
-    if (score >= 20) return 'bg-green-100 text-green-800 border-green-200'
-    if (score > 0) return 'bg-yellow-100 text-yellow-800 border-yellow-200'
-    return 'bg-red-100 text-red-800 border-red-200'
-  }
+  const filteredOptimizations = optimizations.filter(opt =>
+    opt.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    opt.trial_id.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    })
-  }
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50">
-        <div className="bg-blue-600">
-          <header className="px-4 sm:px-6 py-6 sm:py-8">
-            <div className="flex items-center gap-4">
-              <SidebarTrigger className="text-white hover:bg-white/20" />
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-white">Protocol Optimization</h1>
-                <p className="text-blue-100 text-base sm:text-lg">Optimize clinical trial protocols for better patient eligibility</p>
-              </div>
-            </div>
-          </header>
-        </div>
-        
-        <main className="p-4 sm:p-8 -mt-4 relative z-10 max-w-6xl mx-auto">
-          <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm rounded-2xl overflow-hidden">
-            <CardContent className="p-8">
-              <div className="flex items-center justify-center py-12">
-                <div className="text-center">
-                  <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
-                  <p className="text-gray-600 text-lg">Loading protocol optimization data...</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </main>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50">
-        <div className="bg-blue-600">
-          <header className="px-4 sm:px-6 py-6 sm:py-8">
-            <div className="flex items-center gap-4">
-              <SidebarTrigger className="text-white hover:bg-white/20" />
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-white">Protocol Optimization</h1>
-                <p className="text-blue-100 text-base sm:text-lg">Optimize clinical trial protocols for better patient eligibility</p>
-              </div>
-            </div>
-          </header>
-        </div>
-        
-        <main className="p-4 sm:p-8 -mt-4 relative z-10 max-w-6xl mx-auto">
-          <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm rounded-2xl overflow-hidden">
-            <CardContent className="p-8">
-              <div className="flex items-center justify-center py-12">
-                <div className="text-center">
-                  <AlertCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold mb-2 text-gray-900">Error Loading Data</h3>
-                  <p className="text-gray-600 mb-4">{error}</p>
-                  <Button onClick={fetchProtocolData} className="bg-blue-600 hover:bg-blue-700">
-                    Try Again
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </main>
-      </div>
-    )
+  const handleViewDetails = (optimizationId: string) => {
+    navigate(`/protocol-optimization/${optimizationId}`)
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50">
-      <div className="bg-blue-600">
-        <header className="px-4 sm:px-6 py-6 sm:py-8">
-          <div className="flex items-center gap-4">
-            <SidebarTrigger className="text-white hover:bg-white/20" />
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-white">Protocol Optimization</h1>
-              <p className="text-blue-100 text-base sm:text-lg">Optimize clinical trial protocols for better patient eligibility</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50/30 to-slate-50 p-6">
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* Header */}
+        <div className="text-center space-y-4">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <div className="w-12 h-12 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl flex items-center justify-center">
+              <Zap className="w-6 h-6 text-white" />
             </div>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-700 to-teal-700 bg-clip-text text-transparent">
+              Protocol Optimization
+            </h1>
           </div>
-        </header>
-      </div>
-      
-      <main className="p-4 sm:p-8 -mt-4 relative z-10 max-w-6xl mx-auto">
-        <div className="space-y-6 animate-slide-up">
-          {/* Summary Stats */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm rounded-2xl">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-                    <FileText className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-gray-900">{protocols.length}</p>
-                    <p className="text-sm text-gray-600">Total Protocols</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm rounded-2xl">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
-                    <TrendingUp className="w-5 h-5 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {protocols.filter(p => getOptimizationScore(p) >= 10).length}
-                    </p>
-                    <p className="text-sm text-gray-600">High Optimization Potential</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm rounded-2xl">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-                    <Users className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {Math.round(protocols.reduce((sum, p) => sum + getOptimizationScore(p), 0) / protocols.length) || 0}%
-                    </p>
-                    <p className="text-sm text-gray-600">Avg. Potential Gain</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Protocols List */}
-          <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm rounded-2xl overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100">
-              <CardTitle className="text-lg sm:text-xl">Protocol Optimization Results</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <div className="space-y-0">
-                {protocols.map((protocol, index) => {
-                  const optimizationScore = getOptimizationScore(protocol)
-                  const summaryItems = parseSummary(protocol.summary)
-                  
-                  return (
-                    <div key={protocol.trial_id} className="border-b border-gray-100 last:border-b-0">
-                      <Link 
-                        to={`/protocol-optimization/${protocol.trial_id}`}
-                        className="block p-6 hover:bg-gray-50 transition-colors"
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-3">
-                              <h3 className="text-lg font-semibold text-gray-900">{protocol.trial_id}</h3>
-                              <Badge className={`${getScoreColor(optimizationScore)} border font-medium px-3 py-1`}>
-                                {optimizationScore.toFixed(1)}% Potential Gain
-                              </Badge>
-                            </div>
-                            
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-3">
-                              <div className="flex items-center gap-2">
-                                <Users className="w-4 h-4 text-gray-500" />
-                                <span className="text-sm text-gray-600">
-                                  {protocol.age_optimization_result.quantitative.eligible_patients} eligible patients
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <TrendingUp className="w-4 h-4 text-gray-500" />
-                                <span className="text-sm text-gray-600">
-                                  Age: {protocol.age_optimization_result.llm_insight.eligibility_gain_estimate}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <Calendar className="w-4 h-4 text-gray-500" />
-                                <span className="text-sm text-gray-600">
-                                  {formatDate(protocol.created_at)}
-                                </span>
-                              </div>
-                            </div>
-                            
-                            <p className="text-sm text-gray-600 line-clamp-2">
-                              {summaryItems[0]}
-                            </p>
-                          </div>
-                          
-                          <ChevronRight className="w-5 h-5 text-gray-400 ml-4" />
-                        </div>
-                      </Link>
-                    </div>
-                  )
-                })}
-              </div>
-            </CardContent>
-          </Card>
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+            AI-powered insights to optimize clinical trial protocols for better patient eligibility and recruitment
+          </p>
         </div>
-      </main>
+
+        {/* Workflow Section */}
+        <ProtocolOptimizationWorkflowSection />
+
+        {/* Search */}
+        <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm rounded-2xl">
+          <CardContent className="p-6">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Input
+                placeholder="Search protocol optimizations..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 h-12 text-lg border-0 bg-gray-50 focus:bg-white transition-colors"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Results */}
+        <div className="space-y-6">
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div>
+              <p className="text-gray-600 mt-4">Loading protocol optimizations...</p>
+            </div>
+          ) : filteredOptimizations.length === 0 ? (
+            <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm rounded-2xl">
+              <CardContent className="p-12 text-center">
+                <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-700 mb-2">No Protocol Optimizations Found</h3>
+                <p className="text-gray-600">
+                  {searchTerm ? 'Try adjusting your search terms.' : 'No protocol optimizations are available at the moment.'}
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-6">
+              {filteredOptimizations.map((optimization) => (
+                <Card key={optimization.id} className="border-0 shadow-lg bg-white/80 backdrop-blur-sm rounded-2xl hover:shadow-xl transition-all duration-300">
+                  <CardHeader className="pb-4">
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-2">
+                        <CardTitle className="text-xl text-gray-800 flex items-center gap-3">
+                          <FileText className="w-5 h-5 text-emerald-600" />
+                          {optimization.title}
+                        </CardTitle>
+                        <div className="flex items-center gap-4 text-sm text-gray-600">
+                          <span className="flex items-center gap-1">
+                            <strong>Trial ID:</strong> {optimization.trial_id}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Clock className="w-4 h-4" />
+                            {new Date(optimization.created_at).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Badge className={`${getStatusColor(optimization.status)} flex items-center gap-1`}>
+                          {getStatusIcon(optimization.status)}
+                          {optimization.status.charAt(0).toUpperCase() + optimization.status.slice(1)}
+                        </Badge>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="space-y-4">
+                      {optimization.age_eligibility_insights && (
+                        <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                          <h4 className="font-semibold text-blue-800 mb-2">Age Eligibility Insights</h4>
+                          <p className="text-blue-700 text-sm">{optimization.age_eligibility_insights}</p>
+                        </div>
+                      )}
+                      
+                      {optimization.biomarker_eligibility_insights && (
+                        <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                          <h4 className="font-semibold text-purple-800 mb-2">Biomarker Eligibility Insights</h4>
+                          <p className="text-purple-700 text-sm">{optimization.biomarker_eligibility_insights}</p>
+                        </div>
+                      )}
+                      
+                      {optimization.confidence_score && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium text-gray-600">Confidence Score:</span>
+                          <Badge variant="outline" className="text-emerald-700 border-emerald-300">
+                            {(optimization.confidence_score * 100).toFixed(1)}%
+                          </Badge>
+                        </div>
+                      )}
+                      
+                      <div className="flex justify-end pt-4">
+                        <Button 
+                          onClick={() => handleViewDetails(optimization.id)}
+                          className="bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2"
+                        >
+                          <Eye className="w-4 h-4" />
+                          View Details
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   )
 }
