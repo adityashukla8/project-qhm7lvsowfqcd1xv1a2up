@@ -146,7 +146,7 @@ const Trials = () => {
       
       if (response.success) {
         toast({
-          title: "Protocol Optimization Started",
+          title: "✅ Protocol Optimization Completed",
           description: "Redirecting to Protocol Optimization page...",
         })
         
