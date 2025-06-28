@@ -7,7 +7,7 @@ const WorkflowImageSection = () => {
   const [isExpanded, setIsExpanded] = useState(false)
 
   const handleImageClick = () => {
-    window.open('https://github.com/adityashukla8/clinicaltrials-multiagent', '_blank', 'noopener,noreferrer')
+    window.open('https://github.com/adityashukla8/clinicaltrials-multiagent/blob/master/assets/Clinical%20Trial%20Matching%20Workflow.png', '_blank', 'noopener,noreferrer')
   }
 
   return (
