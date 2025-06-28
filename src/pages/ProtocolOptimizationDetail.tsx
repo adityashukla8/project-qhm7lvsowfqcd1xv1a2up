@@ -77,9 +77,18 @@ const ProtocolOptimizationDetail = () => {
     try {
       // The summary appears to be a stringified array
       const parsed = JSON.parse(summaryString)
-      return Array.isArray(parsed) ? parsed : [summaryString]
+      if (Array.isArray(parsed)) {
+        // Clean up the text by removing markdown formatting and brackets
+        return parsed.map(item => 
+          item.replace(/\*\*/g, '')
+            .replace(/\*/g, '')
+            .replace(/\[|\]/g, '')
+            .trim()
+        ).filter(item => item.length > 0)
+      }
+      return [summaryString.replace(/\*\*/g, '').replace(/\*/g, '').replace(/\[|\]/g, '').trim()]
     } catch {
-      return [summaryString]
+      return [summaryString.replace(/\*\*/g, '').replace(/\*/g, '').replace(/\[|\]/g, '').trim()]
     }
   }
 
@@ -281,9 +290,9 @@ const ProtocolOptimizationDetail = () => {
         <div className="space-y-6 animate-slide-up">
           {/* Summary Overview */}
           <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm rounded-2xl overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-purple-50 to-indigo-50 border-b border-purple-100">
+            <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
               <CardTitle className="flex items-center gap-3 text-lg sm:text-xl">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-purple-600 to-purple-700 rounded-xl flex items-center justify-center">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-gray-600 to-gray-700 rounded-xl flex items-center justify-center">
                   <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                 </div>
                 Optimization Summary
@@ -291,14 +300,18 @@ const ProtocolOptimizationDetail = () => {
             </CardHeader>
             <CardContent className="p-6">
               <div className="space-y-4">
-                {summaryItems.map((item, index) => (
-                  <div 
-                    key={index}
-                    className="text-gray-700 leading-relaxed p-3 bg-gray-50 rounded-lg"
-                    dangerouslySetInnerHTML={{ __html: formatText(item) }}
-                  />
-                ))}
-                <div className="flex items-center gap-2 text-sm text-gray-500 mt-4">
+                <ul className="space-y-3">
+                  {summaryItems.map((item, index) => (
+                    <li 
+                      key={index}
+                      className="text-gray-700 leading-relaxed flex items-start gap-3"
+                    >
+                      <div className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></div>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="flex items-center gap-2 text-sm text-gray-500 mt-6 pt-4 border-t border-gray-200">
                   <Calendar className="w-4 h-4" />
                   <span>Analysis generated on {formatDate(protocol.created_at)}</span>
                 </div>

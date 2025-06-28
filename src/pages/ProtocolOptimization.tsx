@@ -58,7 +58,21 @@ const ProtocolOptimization = () => {
       console.log('Protocol response:', response)
       
       if (response.success && response.data) {
-        setProtocols(response.data)
+        // Filter to show only unique (most recent) NCT IDs
+        const uniqueProtocols = response.data.reduce((acc: ProtocolData[], current: ProtocolData) => {
+          const existingIndex = acc.findIndex(p => p.trial_id === current.trial_id)
+          if (existingIndex === -1) {
+            acc.push(current)
+          } else {
+            // Keep the most recent one (assuming created_at is the timestamp)
+            if (new Date(current.created_at) > new Date(acc[existingIndex].created_at)) {
+              acc[existingIndex] = current
+            }
+          }
+          return acc
+        }, [])
+        
+        setProtocols(uniqueProtocols)
       } else {
         setError(response.error || 'Failed to fetch protocol data')
       }
@@ -74,9 +88,18 @@ const ProtocolOptimization = () => {
     try {
       // The summary appears to be a stringified array
       const parsed = JSON.parse(summaryString)
-      return Array.isArray(parsed) ? parsed : [summaryString]
+      if (Array.isArray(parsed)) {
+        // Clean up the text by removing markdown formatting and brackets
+        return parsed.map(item => 
+          item.replace(/\*\*/g, '')
+            .replace(/\*/g, '')
+            .replace(/\[|\]/g, '')
+            .trim()
+        ).filter(item => item.length > 0)
+      }
+      return [summaryString.replace(/\*\*/g, '').replace(/\*/g, '').replace(/\[|\]/g, '').trim()]
     } catch {
-      return [summaryString]
+      return [summaryString.replace(/\*\*/g, '').replace(/\*/g, '').replace(/\[|\]/g, '').trim()]
     }
   }
 
@@ -242,6 +265,7 @@ const ProtocolOptimization = () => {
               <div className="space-y-0">
                 {protocols.map((protocol, index) => {
                   const optimizationScore = getOptimizationScore(protocol)
+                  const summaryItems = parseSummary(protocol.summary)
                   
                   return (
                     <div key={protocol.trial_id} className="border-b border-gray-100 last:border-b-0">
@@ -280,7 +304,7 @@ const ProtocolOptimization = () => {
                             </div>
                             
                             <p className="text-sm text-gray-600 line-clamp-2">
-                              {parseSummary(protocol.summary)[0]}
+                              {summaryItems[0]}
                             </p>
                           </div>
                           
