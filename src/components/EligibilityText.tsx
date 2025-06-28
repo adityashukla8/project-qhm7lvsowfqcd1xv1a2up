@@ -51,13 +51,13 @@ const EligibilityText = ({
   const isTruncatedByLength = !isExpanded && text.length > maxChars
 
   return (
-    <div className={`space-y-2 ${className}`}>
+    <div className={`space-y-3 ${className}`}>
       {bulletPoints.length > 1 ? (
-        <ul className="space-y-2">
+        <ul className="space-y-3">
           {displayItems.map((item, index) => (
-            <li key={index} className="flex items-start gap-2">
-              <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0" />
-              <span className="text-sm text-gray-700 leading-relaxed">
+            <li key={index} className="flex items-start gap-3">
+              <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0" />
+              <span className="text-sm sm:text-base text-gray-700 leading-relaxed">
                 {isTruncatedByLength && index === displayItems.length - 1 && item.length > 100
                   ? `${item.substring(0, 100)}...`
                   : item
@@ -67,7 +67,7 @@ const EligibilityText = ({
           ))}
         </ul>
       ) : (
-        <p className="text-sm text-gray-700 leading-relaxed">
+        <p className="text-sm sm:text-base text-gray-700 leading-relaxed">
           {isTruncatedByLength ? `${text.substring(0, maxChars)}...` : text}
         </p>
       )}
@@ -77,17 +77,19 @@ const EligibilityText = ({
           variant="ghost"
           size="sm"
           onClick={() => setIsExpanded(!isExpanded)}
-          className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 p-0 h-auto font-medium"
+          className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 p-2 h-auto font-medium min-h-[44px] touch-manipulation"
         >
           {isExpanded ? (
             <>
-              <ChevronUp className="w-4 h-4 mr-1" />
+              <ChevronUp className="w-4 h-4 mr-2" />
               Show less
             </>
           ) : (
             <>
-              <ChevronDown className="w-4 h-4 mr-1" />
-              Show more {bulletPoints.length > maxItems && `(${bulletPoints.length - maxItems} more items)`}
+              <ChevronDown className="w-4 h-4 mr-2" />
+              <span className="text-left">
+                Show more {bulletPoints.length > maxItems && `(${bulletPoints.length - maxItems} more items)`}
+              </span>
             </>
           )}
         </Button>

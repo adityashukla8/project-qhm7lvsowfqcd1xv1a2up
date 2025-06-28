@@ -71,36 +71,34 @@ const TrialMatchingDetails = ({ trialId }: TrialMatchingDetailsProps) => {
 
   return (
     <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm rounded-2xl overflow-hidden">
-      <CardHeader className="bg-gradient-to-r from-purple-50 to-indigo-50 border-b border-purple-100">
+      <CardHeader className="bg-gradient-to-r from-purple-50 to-indigo-50 border-b border-purple-100 p-4 sm:p-6">
         <CardTitle className="flex items-center gap-3 text-lg sm:text-xl">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-purple-600 to-purple-700 rounded-xl flex items-center justify-center">
-            <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+          <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-purple-700 rounded-xl flex items-center justify-center">
+            <Activity className="w-5 h-5 text-white" />
           </div>
           Patient Matching
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-4 sm:p-8 space-y-4 sm:space-y-6">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1 space-y-2">
+      <CardContent className="p-4 sm:p-6 lg:p-8 space-y-6">
+        <div className="flex flex-col gap-4">
+          <div className="space-y-3">
             <Label htmlFor="patientId" className="text-sm font-semibold text-gray-700">Patient ID</Label>
             <Input 
               id="patientId" 
-              placeholder="Enter patient ID to check match (e.g., P001, P002, etc.)"
-              className="h-10 sm:h-12 border-0 bg-gray-50 rounded-xl"
+              placeholder="Enter patient ID (e.g., P001, P002, etc.)"
+              className="h-12 border-0 bg-gray-50 rounded-xl text-base"
               value={patientId}
               onChange={(e) => setPatientId(e.target.value)}
             />
           </div>
-          <div className="flex items-end">
-            <Button 
-              className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white border-0 rounded-xl px-6 h-10 sm:h-12 shadow-lg w-full sm:w-auto"
-              onClick={handleCheckMatch}
-              disabled={isMatching}
-            >
-              <Search className="w-4 h-4 mr-2" />
-              {isMatching ? 'Checking...' : 'Check Match'}
-            </Button>
-          </div>
+          <Button 
+            className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white border-0 rounded-xl px-6 h-12 shadow-lg touch-manipulation"
+            onClick={handleCheckMatch}
+            disabled={isMatching}
+          >
+            <Search className="w-4 h-4 mr-2" />
+            {isMatching ? 'Checking...' : 'Check Match'}
+          </Button>
         </div>
 
         {isMatching && (
@@ -113,38 +111,38 @@ const TrialMatchingDetails = ({ trialId }: TrialMatchingDetailsProps) => {
         {hasSearched && (
           <div className="mt-6">
             {matchResult ? (
-              <div className="border border-gray-200 rounded-2xl p-6 bg-white">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+              <div className="border border-gray-200 rounded-2xl p-4 sm:p-6 bg-white">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
+                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
                     <User className="w-6 h-6 text-blue-600" />
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <h3 className="text-lg font-semibold text-gray-900">Patient {patientId}</h3>
                     <p className="text-sm text-gray-600">Match Analysis Results</p>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                  <div className="space-y-2">
+                <div className="grid grid-cols-1 gap-6 mb-6">
+                  <div className="space-y-3">
                     <Label className="text-xs text-gray-500 uppercase tracking-wide">Match Score</Label>
-                    <Badge className={`${getMatchScoreColor(matchResult.match_score)} border font-medium px-3 py-2 text-base`}>
+                    <Badge className={`${getMatchScoreColor(matchResult.match_score)} border font-medium px-4 py-2 text-base w-fit`}>
                       {matchResult.match_score}% Match
                     </Badge>
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <Label className="text-xs text-gray-500 uppercase tracking-wide">Eligibility Status</Label>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
                       {getEligibilityIcon(matchResult.eligibility_status)}
-                      <span className={`font-medium ${matchResult.eligibility_status.toLowerCase() === 'eligible' ? 'text-green-700' : 'text-red-700'}`}>
+                      <span className={`font-medium text-base ${matchResult.eligibility_status.toLowerCase() === 'eligible' ? 'text-green-700' : 'text-red-700'}`}>
                         {matchResult.eligibility_status}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <Label className="text-xs text-gray-500 uppercase tracking-wide">Match Reason</Label>
-                  <p className="text-sm text-gray-700 bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm sm:text-base text-gray-700 bg-gray-50 p-4 rounded-lg leading-relaxed">
                     {matchResult.match_reason}
                   </p>
                 </div>
@@ -155,7 +153,7 @@ const TrialMatchingDetails = ({ trialId }: TrialMatchingDetailsProps) => {
                   <XCircle className="w-6 h-6 text-gray-400" />
                 </div>
                 <h3 className="text-lg font-semibold mb-2 text-gray-900">No Match Found</h3>
-                <p className="text-gray-500">This patient does not match this trial or the patient ID was not found.</p>
+                <p className="text-gray-500 text-sm sm:text-base">This patient does not match this trial or the patient ID was not found.</p>
               </div>
             )}
           </div>
@@ -167,7 +165,7 @@ const TrialMatchingDetails = ({ trialId }: TrialMatchingDetailsProps) => {
               <Search className="w-6 h-6 text-purple-600" />
             </div>
             <h3 className="text-lg font-semibold mb-2 text-gray-900">Check Patient Match</h3>
-            <p className="text-gray-500">Enter a patient ID to see if they match this clinical trial</p>
+            <p className="text-gray-500 text-sm sm:text-base">Enter a patient ID to see if they match this clinical trial</p>
           </div>
         )}
       </CardContent>

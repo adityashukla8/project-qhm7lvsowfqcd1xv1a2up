@@ -138,22 +138,22 @@ const WorkflowDiagram = () => {
       <div key={step.id} className="relative">
         <Card 
           className={`
-            cursor-pointer transition-all duration-300 hover:shadow-lg
+            cursor-pointer transition-all duration-300 hover:shadow-lg touch-manipulation
             ${isSelected ? 'ring-2 ring-blue-500 shadow-lg' : ''}
             ${isHighlighted ? 'ring-2 ring-amber-400 shadow-amber-100' : ''}
           `}
           onClick={() => setSelectedStep(isSelected ? null : step.id)}
         >
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-3 p-4">
             <div className="flex items-center gap-3">
               <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${step.color}`}>
                 {getStepIcon(step)}
               </div>
-              <div className="flex-1">
-                <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                  {step.title}
+              <div className="flex-1 min-w-0">
+                <CardTitle className="text-sm sm:text-base font-semibold flex flex-col sm:flex-row sm:items-center gap-2">
+                  <span className="break-words">{step.title}</span>
                   {isHighlighted && (
-                    <Badge className="bg-amber-100 text-amber-800 border-amber-300 text-xs">
+                    <Badge className="bg-amber-100 text-amber-800 border-amber-300 text-xs w-fit">
                       <Zap className="w-3 h-3 mr-1" />
                       AI/Tool
                     </Badge>
@@ -164,32 +164,32 @@ const WorkflowDiagram = () => {
           </CardHeader>
           
           {isSelected && (
-            <CardContent className="pt-0 space-y-3">
-              <p className="text-sm text-gray-600">{step.description}</p>
+            <CardContent className="pt-0 p-4 space-y-4">
+              <p className="text-sm text-gray-600 leading-relaxed">{step.description}</p>
               
               {step.details && (
                 <div className="bg-gray-50 p-3 rounded-lg">
-                  <p className="text-xs text-gray-700">{step.details}</p>
+                  <p className="text-xs text-gray-700 leading-relaxed">{step.details}</p>
                 </div>
               )}
               
               {step.output && (
                 <div className="bg-blue-50 p-3 rounded-lg">
                   <p className="text-xs font-medium text-blue-900 mb-1">Output:</p>
-                  <p className="text-xs text-blue-700">{step.output}</p>
+                  <p className="text-xs text-blue-700 leading-relaxed">{step.output}</p>
                 </div>
               )}
               
               {step.branches && (
                 <div className="space-y-2">
                   {step.branches.map((branch: string, idx: number) => (
-                    <div key={idx} className="flex items-center gap-2">
+                    <div key={idx} className="flex items-start gap-2">
                       {branch.includes('Yes') ? (
-                        <CheckCircle className="w-4 h-4 text-green-600" />
+                        <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
                       ) : (
-                        <XCircle className="w-4 h-4 text-red-600" />
+                        <XCircle className="w-4 h-4 text-red-600 mt-0.5 flex-shrink-0" />
                       )}
-                      <span className="text-xs text-gray-700">{branch}</span>
+                      <span className="text-xs text-gray-700 leading-relaxed">{branch}</span>
                     </div>
                   ))}
                 </div>
@@ -198,11 +198,11 @@ const WorkflowDiagram = () => {
               {step.sources && (
                 <div className="bg-indigo-50 p-3 rounded-lg">
                   <p className="text-xs font-medium text-indigo-900 mb-2">Sources Crawled:</p>
-                  <div className="grid grid-cols-1 gap-1 max-h-32 overflow-y-auto">
+                  <div className="grid grid-cols-1 gap-1 max-h-40 overflow-y-auto">
                     {step.sources.map((source: any, idx: number) => (
-                      <div key={idx} className="flex justify-between items-center text-xs">
-                        <span className="font-medium text-indigo-800">{source.field}:</span>
-                        <span className="text-indigo-600">{source.source}</span>
+                      <div key={idx} className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 text-xs">
+                        <span className="font-medium text-indigo-800 break-words">{source.field}:</span>
+                        <span className="text-indigo-600 break-words">{source.source}</span>
                       </div>
                     ))}
                   </div>
@@ -223,10 +223,10 @@ const WorkflowDiagram = () => {
 
   return (
     <div className="space-y-4">
-      <div className="text-center mb-6">
+      <div className="text-center mb-6 px-4">
         <h3 className="text-lg font-bold text-gray-900 mb-2">Clinical Trial Matching Workflow</h3>
-        <p className="text-sm text-gray-600">Click on any step to see detailed information</p>
-        <div className="flex justify-center mt-3">
+        <p className="text-sm text-gray-600 mb-3">Tap on any step to see detailed information</p>
+        <div className="flex justify-center">
           <Badge className="bg-amber-100 text-amber-800 border-amber-300">
             <Zap className="w-3 h-3 mr-1" />
             AI Agents & Tools Highlighted
@@ -234,16 +234,16 @@ const WorkflowDiagram = () => {
         </div>
       </div>
       
-      <div className="max-h-96 overflow-y-auto pr-2">
+      <div className="max-h-96 overflow-y-auto pr-2 px-2">
         {steps.map((step, index) => renderStepCard(step, index))}
       </div>
       
-      <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+      <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 mx-2">
         <div className="flex items-start gap-3">
-          <Globe className="w-5 h-5 text-blue-600 mt-0.5" />
+          <Globe className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
           <div>
             <h4 className="text-sm font-semibold text-blue-900 mb-1">AI-Powered Intelligence</h4>
-            <p className="text-xs text-blue-700">
+            <p className="text-xs text-blue-700 leading-relaxed">
               This workflow leverages advanced AI agents (Gemini for matching, Tavily for enrichment) 
               and automated tools to provide comprehensive clinical trial analysis from multiple authoritative sources.
             </p>

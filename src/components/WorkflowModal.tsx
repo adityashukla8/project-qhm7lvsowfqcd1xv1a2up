@@ -1,30 +1,30 @@
 import { useState } from 'react'
-import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { HelpCircle } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Info } from "lucide-react"
 import WorkflowDiagram from './WorkflowDiagram'
 
 const WorkflowModal = () => {
-  const [isOpen, setIsOpen] = useState(false)
+  const [open, setOpen] = useState(false)
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button 
           variant="outline" 
-          className="bg-white/80 backdrop-blur-sm border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-800 shadow-sm"
+          size="sm" 
+          className="bg-white/10 border-white/20 text-white hover:bg-white/20 min-h-[44px] touch-manipulation"
         >
-          <HelpCircle className="w-4 h-4 mr-2" />
-          How It Works
+          <Info className="w-4 h-4 mr-2" />
+          <span className="hidden sm:inline">How it Works</span>
+          <span className="sm:hidden">Info</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-bold text-gray-900">
-            Clinical Trial Matching Process
-          </DialogTitle>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden p-0">
+        <DialogHeader className="p-4 sm:p-6 border-b">
+          <DialogTitle className="text-lg sm:text-xl">Clinical Trial Matching Workflow</DialogTitle>
         </DialogHeader>
-        <div className="overflow-y-auto">
+        <div className="overflow-y-auto max-h-[calc(90vh-120px)] p-4 sm:p-6">
           <WorkflowDiagram />
         </div>
       </DialogContent>
