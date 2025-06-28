@@ -58,21 +58,7 @@ const ProtocolOptimization = () => {
       console.log('Protocol response:', response)
       
       if (response.success && response.data) {
-        // Filter to show only unique (most recent) NCT IDs
-        const uniqueProtocols = response.data.reduce((acc: ProtocolData[], current: ProtocolData) => {
-          const existingIndex = acc.findIndex(p => p.trial_id === current.trial_id)
-          if (existingIndex === -1) {
-            acc.push(current)
-          } else {
-            // Keep the most recent one (assuming created_at is the timestamp)
-            if (new Date(current.created_at) > new Date(acc[existingIndex].created_at)) {
-              acc[existingIndex] = current
-            }
-          }
-          return acc
-        }, [])
-        
-        setProtocols(uniqueProtocols)
+        setProtocols(response.data)
       } else {
         setError(response.error || 'Failed to fetch protocol data')
       }

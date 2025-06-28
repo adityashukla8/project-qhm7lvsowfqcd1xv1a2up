@@ -78,17 +78,11 @@ const ProtocolOptimizationDetail = () => {
       // The summary appears to be a stringified array
       const parsed = JSON.parse(summaryString)
       if (Array.isArray(parsed)) {
-        // Clean up the text by removing markdown formatting and brackets
-        return parsed.map(item => 
-          item.replace(/\*\*/g, '')
-            .replace(/\*/g, '')
-            .replace(/\[|\]/g, '')
-            .trim()
-        ).filter(item => item.length > 0)
+        return parsed.filter(item => item.trim().length > 0)
       }
-      return [summaryString.replace(/\*\*/g, '').replace(/\*/g, '').replace(/\[|\]/g, '').trim()]
+      return [summaryString]
     } catch {
-      return [summaryString.replace(/\*\*/g, '').replace(/\*/g, '').replace(/\[|\]/g, '').trim()]
+      return [summaryString]
     }
   }
 
@@ -307,7 +301,7 @@ const ProtocolOptimizationDetail = () => {
                       className="text-gray-700 leading-relaxed flex items-start gap-3"
                     >
                       <div className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0"></div>
-                      <span>{item}</span>
+                      <div dangerouslySetInnerHTML={{ __html: formatText(item) }} />
                     </li>
                   ))}
                 </ul>
