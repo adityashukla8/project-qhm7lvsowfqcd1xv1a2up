@@ -1,6 +1,6 @@
 import { superdevClient } from "@/lib/superdev/client";
 
-export const trialInfo = superdevClient.functions.trialInfo;
+export const trialInfo = superdevClient.functions.trial_info;
 export const getWorkflowStatus = superdevClient.functions.getWorkflowStatus;
 export const runAgenticWorkflow = superdevClient.functions.runAgenticWorkflow;
 export const appwriteSync = superdevClient.functions.appwriteSync;
