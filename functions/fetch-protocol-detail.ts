@@ -13,16 +13,16 @@ Deno.serve(async (req) => {
       });
     }
 
-    const baseUrl = 'https://clinicaltrials-multiagent-502131642989.asia-south1.run.app/search-protocols/';
+    const baseUrl = `https://clinicaltrials-multiagent-502131642989.asia-south1.run.app/search-protocols/${trial_id}`;
     
     console.log('Fetching protocol detail for:', trial_id);
+    console.log('API URL:', baseUrl);
     
     const response = await fetch(baseUrl, {
-      method: 'POST',
+      method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ trial_id }),
     });
 
     if (!response.ok) {
@@ -39,10 +39,8 @@ Deno.serve(async (req) => {
     const data = await response.json();
     console.log('Protocol detail API response:', data);
 
-    return new Response(JSON.stringify({
-      success: true,
-      data: data
-    }), {
+    // The API already returns the data in the expected format with success and data fields
+    return new Response(JSON.stringify(data), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });

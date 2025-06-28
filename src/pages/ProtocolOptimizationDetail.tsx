@@ -11,17 +11,30 @@ import { fetchProtocolDetail } from '@/functions'
 interface ProtocolDetailData {
   summary: string
   age_optimization_result: {
-    summary: string
-    clinical_recommendation: string
-    revised_age_range: string
-    eligibility_gain_estimate: string
-    note: string
+    quantitative: {
+      eligible_patients: number
+      missed_patients: number
+      missed_due_to_upper_limit: number
+      missed_due_to_lower_limit: number
+      suggested_upper_bound: number | null
+      suggested_lower_bound: number | null
+      current_range: string
+      suggested_range: string
+      total_patients: number
+    }
+    llm_insight: {
+      summary: string
+      clinical_recommendation: string
+      revised_age_range: string
+      eligibility_gain_estimate: string
+      note: string
+    }
   }
   biomarker_optimization_result: {
     summary: string
-    clinical_recommendation: string
-    estimated_gain: string
-    note: string
+    suggested_biomarker_criteria: string
+    gain_estimate: string
+    clinical_note: string
   }
   created_at: string
 }
@@ -60,6 +73,16 @@ const ProtocolOptimizationDetail = () => {
     }
   }
 
+  const parseSummary = (summaryString: string) => {
+    try {
+      // The summary appears to be a stringified array
+      const parsed = JSON.parse(summaryString)
+      return Array.isArray(parsed) ? parsed : [summaryString]
+    } catch {
+      return [summaryString]
+    }
+  }
+
   const formatText = (text: string) => {
     // Handle markdown-like formatting
     return text
@@ -70,8 +93,13 @@ const ProtocolOptimizationDetail = () => {
   }
 
   const getOptimizationScore = (protocol: ProtocolDetailData) => {
-    const ageGain = parseFloat(protocol.age_optimization_result.eligibility_gain_estimate.replace('%', '')) || 0
-    const biomarkerGain = parseFloat(protocol.biomarker_optimization_result.estimated_gain.replace('%', '')) || 0
+    const ageGain = parseFloat(protocol.age_optimization_result.llm_insight.eligibility_gain_estimate.replace('%', '')) || 0
+    // Parse biomarker gain estimate (e.g., "20-30%" -> average of 25%)
+    const biomarkerGainMatch = protocol.biomarker_optimization_result.gain_estimate.match(/(\d+)-(\d+)%/)
+    const biomarkerGain = biomarkerGainMatch 
+      ? (parseInt(biomarkerGainMatch[1]) + parseInt(biomarkerGainMatch[2])) / 2 
+      : parseFloat(protocol.biomarker_optimization_result.gain_estimate.replace('%', '')) || 0
+    
     return ageGain + biomarkerGain
   }
 
@@ -220,6 +248,7 @@ const ProtocolOptimizationDetail = () => {
   }
 
   const optimizationScore = getOptimizationScore(protocol)
+  const summaryItems = parseSummary(protocol.summary)
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50">
@@ -262,11 +291,14 @@ const ProtocolOptimizationDetail = () => {
             </CardHeader>
             <CardContent className="p-6">
               <div className="space-y-4">
-                <div 
-                  className="text-gray-700 leading-relaxed"
-                  dangerouslySetInnerHTML={{ __html: formatText(protocol.summary) }}
-                />
-                <div className="flex items-center gap-2 text-sm text-gray-500">
+                {summaryItems.map((item, index) => (
+                  <div 
+                    key={index}
+                    className="text-gray-700 leading-relaxed p-3 bg-gray-50 rounded-lg"
+                    dangerouslySetInnerHTML={{ __html: formatText(item) }}
+                  />
+                ))}
+                <div className="flex items-center gap-2 text-sm text-gray-500 mt-4">
                   <Calendar className="w-4 h-4" />
                   <span>Analysis generated on {formatDate(protocol.created_at)}</span>
                 </div>
@@ -283,7 +315,7 @@ const ProtocolOptimizationDetail = () => {
                 </div>
                 Age Optimization Analysis
                 <Badge className="bg-blue-100 text-blue-800 border-blue-200 font-medium px-3 py-1">
-                  {protocol.age_optimization_result.eligibility_gain_estimate} Potential Gain
+                  {protocol.age_optimization_result.llm_insight.eligibility_gain_estimate} Potential Gain
                 </Badge>
               </CardTitle>
             </CardHeader>
@@ -294,19 +326,34 @@ const ProtocolOptimizationDetail = () => {
                     <div className="bg-blue-50 p-4 rounded-lg">
                       <h4 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">
                         <Target className="w-4 h-4" />
-                        Revised Age Range
+                        Current vs Suggested Age Range
                       </h4>
-                      <p className="text-lg font-bold text-blue-700">
-                        {protocol.age_optimization_result.revised_age_range}
-                      </p>
+                      <div className="space-y-2">
+                        <p className="text-sm text-blue-700">
+                          <strong>Current:</strong> {protocol.age_optimization_result.quantitative.current_range}
+                        </p>
+                        <p className="text-sm text-blue-700">
+                          <strong>Suggested:</strong> {protocol.age_optimization_result.quantitative.suggested_range}
+                        </p>
+                      </div>
                     </div>
                     
                     <div className="bg-gray-50 p-4 rounded-lg">
-                      <h4 className="font-semibold text-gray-900 mb-2">Summary</h4>
-                      <div 
-                        className="text-sm text-gray-700"
-                        dangerouslySetInnerHTML={{ __html: formatText(protocol.age_optimization_result.summary) }}
-                      />
+                      <h4 className="font-semibold text-gray-900 mb-2">Patient Statistics</h4>
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <div>
+                          <span className="text-gray-600">Eligible:</span>
+                          <span className="font-medium ml-2">{protocol.age_optimization_result.quantitative.eligible_patients}</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-600">Total:</span>
+                          <span className="font-medium ml-2">{protocol.age_optimization_result.quantitative.total_patients}</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-600">Missed:</span>
+                          <span className="font-medium ml-2">{protocol.age_optimization_result.quantitative.missed_patients}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                   
@@ -318,7 +365,7 @@ const ProtocolOptimizationDetail = () => {
                       </h4>
                       <div 
                         className="text-sm text-green-700"
-                        dangerouslySetInnerHTML={{ __html: formatText(protocol.age_optimization_result.clinical_recommendation) }}
+                        dangerouslySetInnerHTML={{ __html: formatText(protocol.age_optimization_result.llm_insight.clinical_recommendation) }}
                       />
                     </div>
                     
@@ -326,7 +373,7 @@ const ProtocolOptimizationDetail = () => {
                       <h4 className="font-semibold text-yellow-900 mb-2">Important Note</h4>
                       <div 
                         className="text-sm text-yellow-700"
-                        dangerouslySetInnerHTML={{ __html: formatText(protocol.age_optimization_result.note) }}
+                        dangerouslySetInnerHTML={{ __html: formatText(protocol.age_optimization_result.llm_insight.note) }}
                       />
                     </div>
                   </div>
@@ -344,42 +391,43 @@ const ProtocolOptimizationDetail = () => {
                 </div>
                 Biomarker Optimization Analysis
                 <Badge className="bg-green-100 text-green-800 border-green-200 font-medium px-3 py-1">
-                  {protocol.biomarker_optimization_result.estimated_gain} Potential Gain
+                  {protocol.biomarker_optimization_result.gain_estimate.split('.')[0]} Potential Gain
                 </Badge>
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
               <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <h4 className="font-semibold text-gray-900 mb-2">Summary</h4>
-                      <div 
-                        className="text-sm text-gray-700"
-                        dangerouslySetInnerHTML={{ __html: formatText(protocol.biomarker_optimization_result.summary) }}
-                      />
-                    </div>
-                    
-                    <div className="bg-green-50 p-4 rounded-lg">
-                      <h4 className="font-semibold text-green-900 mb-2 flex items-center gap-2">
-                        <Lightbulb className="w-4 h-4" />
-                        Clinical Recommendation
-                      </h4>
-                      <div 
-                        className="text-sm text-green-700"
-                        dangerouslySetInnerHTML={{ __html: formatText(protocol.biomarker_optimization_result.clinical_recommendation) }}
-                      />
-                    </div>
+                <div className="grid grid-cols-1 gap-6">
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h4 className="font-semibold text-gray-900 mb-2">Summary</h4>
+                    <div 
+                      className="text-sm text-gray-700"
+                      dangerouslySetInnerHTML={{ __html: formatText(protocol.biomarker_optimization_result.summary) }}
+                    />
                   </div>
                   
-                  <div className="space-y-4">
-                    <div className="bg-yellow-50 p-4 rounded-lg">
-                      <h4 className="font-semibold text-yellow-900 mb-2">Important Note</h4>
-                      <div 
-                        className="text-sm text-yellow-700"
-                        dangerouslySetInnerHTML={{ __html: formatText(protocol.biomarker_optimization_result.note) }}
-                      />
-                    </div>
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <h4 className="font-semibold text-blue-900 mb-2">Suggested Biomarker Criteria</h4>
+                    <div 
+                      className="text-sm text-blue-700 whitespace-pre-line"
+                      dangerouslySetInnerHTML={{ __html: formatText(protocol.biomarker_optimization_result.suggested_biomarker_criteria) }}
+                    />
+                  </div>
+                  
+                  <div className="bg-green-50 p-4 rounded-lg">
+                    <h4 className="font-semibold text-green-900 mb-2">Gain Estimate & Rationale</h4>
+                    <div 
+                      className="text-sm text-green-700 whitespace-pre-line"
+                      dangerouslySetInnerHTML={{ __html: formatText(protocol.biomarker_optimization_result.gain_estimate) }}
+                    />
+                  </div>
+                  
+                  <div className="bg-yellow-50 p-4 rounded-lg">
+                    <h4 className="font-semibold text-yellow-900 mb-2">Clinical Note</h4>
+                    <div 
+                      className="text-sm text-yellow-700"
+                      dangerouslySetInnerHTML={{ __html: formatText(protocol.biomarker_optimization_result.clinical_note) }}
+                    />
                   </div>
                 </div>
               </div>
