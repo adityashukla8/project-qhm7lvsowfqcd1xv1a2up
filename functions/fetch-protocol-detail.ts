@@ -26,13 +26,23 @@ Deno.serve(async (req) => {
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      console.error(`HTTP error! status: ${response.status}`);
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: `HTTP error! status: ${response.status}` 
+      }), {
+        status: response.status,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     const data = await response.json();
     console.log('Protocol detail API response:', data);
 
-    return new Response(JSON.stringify(data), {
+    return new Response(JSON.stringify({
+      success: true,
+      data: data
+    }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
