@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Users, Activity, FileText, Clock, Bot, Wrench, Target } from 'lucide-react'
 import { MetricCard } from './MetricCard'
 import { TrialsPhaseChart } from './TrialsPhaseChart'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { fetchPatients } from '@/functions'
 
 interface DashboardData {
@@ -206,7 +207,7 @@ export function DashboardMetrics() {
           <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">System Performance</h2>
           <p className="text-gray-600 text-sm sm:text-base">AI agents and processing capabilities</p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           <MetricCard
             title="Enriched Summaries"
             value={data.enrichedSummaries}
@@ -220,18 +221,106 @@ export function DashboardMetrics() {
             subtitle="API performance"
           />
           <MetricCard
-            title="Active Agents"
-            value={data.agentCount}
-            icon={Bot}
-            subtitle="Multi-agent system"
-          />
-          <MetricCard
             title="Available Tools"
             value={data.toolCount}
             icon={Wrench}
             subtitle="System capabilities"
           />
         </div>
+      </div>
+
+      {/* Active Agents Section */}
+      <div className="animate-slide-up" style={{animationDelay: '0.6s'}}>
+        <div className="mb-4 sm:mb-6">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Active Agents</h2>
+          <p className="text-gray-600 text-sm sm:text-base">Multi-agent system capabilities and functions</p>
+        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Bot className="w-5 h-5 text-blue-600" />
+              Active Agents (5)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              {/* Agent 1 */}
+              <div className="border-l-4 border-blue-500 pl-4">
+                <h3 className="font-semibold text-gray-900 mb-2">Agent 1: Patient Eligibility Match</h3>
+                <p className="text-sm text-gray-600 mb-2">Compares inclusion/exclusion criteria with patient profile</p>
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <h4 className="font-medium text-gray-800 mb-1">Output:</h4>
+                  <ul className="text-sm text-gray-600 space-y-1">
+                    <li>• Match / No Match</li>
+                    <li>• Reason for match status</li>
+                    <li>• Required changes (if any) to qualify</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Agent 2 */}
+              <div className="border-l-4 border-green-500 pl-4">
+                <h3 className="font-semibold text-gray-900 mb-2">Agent 2: Tavily Web Search Agent</h3>
+                <p className="text-sm text-gray-600 mb-2">Enriches matched trials with:</p>
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <ul className="text-sm text-gray-600 space-y-1">
+                    <li>• Sponsor details</li>
+                    <li>• Enrollment info</li>
+                    <li>• Known side effects</li>
+                    <li>• Statistical plan</li>
+                    <li>• Sample size</li>
+                    <li>• Monitoring requirements</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Agent 3 */}
+              <div className="border-l-4 border-purple-500 pl-4">
+                <h3 className="font-semibold text-gray-900 mb-2">Agent 3: Age Gap Optimization</h3>
+                <p className="text-sm text-gray-600 mb-2">Simulates impact of altering age eligibility range</p>
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <h4 className="font-medium text-gray-800 mb-1">Computes:</h4>
+                  <ul className="text-sm text-gray-600 space-y-1">
+                    <li>• % increase in eligible patients</li>
+                    <li>• Missed due to lower/upper limits</li>
+                    <li>• Revised age range recommendation</li>
+                    <li>• Clinical justification</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Agent 4 */}
+              <div className="border-l-4 border-orange-500 pl-4">
+                <h3 className="font-semibold text-gray-900 mb-2">Agent 4: Biomarker Threshold Agent</h3>
+                <p className="text-sm text-gray-600 mb-2">Evaluates impact of relaxing biomarker criteria</p>
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <h4 className="font-medium text-gray-800 mb-1">Computes:</h4>
+                  <ul className="text-sm text-gray-600 space-y-1">
+                    <li>• Estimated gain</li>
+                    <li>• Suggested new inclusion</li>
+                    <li>• Clinical rationale</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Agent 5 */}
+              <div className="border-l-4 border-teal-500 pl-4">
+                <h3 className="font-semibold text-gray-900 mb-2">Agent 5: Supervisor Summary Agent</h3>
+                <p className="text-sm text-gray-600 mb-2">Synthesizes outputs from Age Gap and Biomarker agents</p>
+                <p className="text-sm text-gray-600 mb-2">Compares against current protocol</p>
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <h4 className="font-medium text-gray-800 mb-1">Generates a unified optimization report:</h4>
+                  <ul className="text-sm text-gray-600 space-y-1">
+                    <li>• Summary impact</li>
+                    <li>• Clinical Recommendations</li>
+                    <li>• Quantitative Estimates</li>
+                    <li>• Explanation</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )
