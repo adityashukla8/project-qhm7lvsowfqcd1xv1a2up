@@ -18,11 +18,7 @@ interface DashboardData {
   toolCount: number
 }
 
-interface DashboardMetricsProps {
-  onActiveAgentsClick?: () => void
-}
-
-export function DashboardMetrics({ onActiveAgentsClick }: DashboardMetricsProps) {
+export function DashboardMetrics() {
   const [data, setData] = useState<DashboardData>({
     totalPatients: 0,
     matchedPatients: 0,
@@ -228,8 +224,6 @@ export function DashboardMetrics({ onActiveAgentsClick }: DashboardMetricsProps)
             value={data.agentCount}
             icon={Bot}
             subtitle="Multi-agent system"
-            onClick={onActiveAgentsClick}
-            className="cursor-pointer hover:shadow-lg transition-shadow"
           />
           <MetricCard
             title="Available Tools"
