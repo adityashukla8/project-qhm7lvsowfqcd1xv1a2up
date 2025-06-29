@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { Users, Activity, FileText, Clock, Bot, Wrench, Target } from 'lucide-react'
 import { MetricCard } from './MetricCard'
 import { TrialsPhaseChart } from './TrialsPhaseChart'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { fetchPatients } from '@/functions'
 
 interface DashboardData {
@@ -19,7 +18,11 @@ interface DashboardData {
   toolCount: number
 }
 
-export function DashboardMetrics() {
+interface DashboardMetricsProps {
+  onActiveAgentsClick?: () => void
+}
+
+export function DashboardMetrics({ onActiveAgentsClick }: DashboardMetricsProps) {
   const [data, setData] = useState<DashboardData>({
     totalPatients: 0,
     matchedPatients: 0,
@@ -207,7 +210,7 @@ export function DashboardMetrics() {
           <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">System Performance</h2>
           <p className="text-gray-600 text-sm sm:text-base">AI agents and processing capabilities</p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           <MetricCard
             title="Enriched Summaries"
             value={data.enrichedSummaries}
@@ -219,6 +222,14 @@ export function DashboardMetrics() {
             value={`${data.avgResponseTime.toFixed(0)}ms`}
             icon={Clock}
             subtitle="API performance"
+          />
+          <MetricCard
+            title="Active Agents"
+            value={data.agentCount}
+            icon={Bot}
+            subtitle="Multi-agent system"
+            onClick={onActiveAgentsClick}
+            className="cursor-pointer hover:shadow-lg transition-shadow"
           />
           <MetricCard
             title="Available Tools"
